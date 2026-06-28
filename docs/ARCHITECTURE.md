@@ -41,3 +41,11 @@ P0 is deterministic and safe. It proves the operating loop without requiring rea
 - `aqtc.integrations.stripe_skills` will gain Stripe test-mode and official Hermes Stripe Skills wrappers.
 - `aqtc.integrations.nvidia` will gain a live Nemotron adapter.
 - `aqtc.integrations.nemoclaw` will gain external approval integration while preserving local policy fallback.
+
+
+## P1 additions
+
+- `aqtc.integrations.nvidia` supports OpenRouter, NVIDIA NIM, and OpenCode Zen via OpenAI-compatible chat completions.
+- `aqtc.integrations.stripe_skills` supports mock ledger plus Stripe test-mode PaymentIntent creation for revenue.
+- `examples/approval_policy.yaml` makes NemoClaw-style constraints explicit.
+- `aqtc.mcp_server` exposes four FastMCP tools for Hermes.

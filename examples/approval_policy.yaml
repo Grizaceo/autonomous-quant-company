@@ -1,0 +1,21 @@
+policy_id: aqtc-hackathon-demo-v1
+
+risk:
+  live_trading: false
+  max_gross_exposure: 4.0
+  max_active_positions: 8
+  max_single_position_weight: 2.0
+
+budget:
+  daily_budget_usd: 25.0
+  require_approval_above_usd: 5.0
+
+actions:
+  deny:
+    - live_broker_execution
+    - print_payment_card_pan
+    - commit_secret_material
+  require_approval:
+    - spend_above_threshold
+    - live_data_subscription_purchase
+    - model_config_change

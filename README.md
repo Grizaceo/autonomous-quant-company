@@ -79,3 +79,38 @@ aqtc report --out demo_report.md
 - P1: Stripe test-mode adapter, official Hermes Stripe Skills docs, Nemotron live adapter if credentials are available.
 - P2: dashboard lite + Docker compose + MCP server.
 - P3: public readiness, video script, submission assets.
+
+
+## P1 sponsor integrations
+
+### Live Nemotron
+
+```bash
+aqtc regime --provider openrouter --json
+aqtc regime --provider nvidia --json
+aqtc demo --nvidia-mode openrouter --json
+```
+
+The default remains `mock` for reproducibility. `auto` tries OpenRouter, NVIDIA NIM, OpenCode Zen, then mock.
+
+### Stripe test mode
+
+```bash
+aqtc demo --stripe-mode stripe_test --json
+```
+
+If `STRIPE_SECRET_KEY` is available, the revenue side creates a real Stripe test-mode PaymentIntent and logs only non-secret IDs/status. If not, it remains a safe ledger-only test-mode event.
+
+### MCP server
+
+```bash
+fastmcp inspect src/aqtc/mcp_server.py:mcp
+fastmcp list src/aqtc/mcp_server.py --json
+fastmcp call src/aqtc/mcp_server.py aqtc_run_cycle reset=true --json
+```
+
+Hermes stdio command:
+
+```bash
+aqtc-mcp
+```

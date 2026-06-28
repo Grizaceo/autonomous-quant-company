@@ -10,9 +10,9 @@ from aqtc.financial_core.portfolio import MockBroker
 from aqtc.financial_core.risk import RiskGuard, RiskPolicy
 from aqtc.financial_core.signals import cap_signal, load_latest_signal
 from aqtc.financial_core.validation import compare_candidate_vs_rejected, load_json, passes_gate4
-from aqtc.integrations.nemoclaw import LocalPolicyApprovalAdapter
-from aqtc.integrations.nvidia import MockNemotronAdapter
-from aqtc.integrations.stripe_skills import MockStripeAdapter, StripeLedger
+from aqtc.integrations.nemoclaw import LocalPolicyApprovalAdapter, load_approval_policy
+from aqtc.integrations.nvidia import make_nemotron_adapter
+from aqtc.integrations.stripe_skills import StripeLedger, make_stripe_adapter
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,9 @@ class BusinessCycleResult:
     stripe_net_usd: float
     report_path: str
     event_count: int
+    nemotron_provider: str
+    nemotron_live: bool
+    stripe_mode: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -34,15 +37,22 @@ class AutonomousQuantCompanyAgent:
     def __init__(self, config: AQTCConfig | None = None):
         self.config = config or AQTCConfig()
         self.config.ensure_state()
+        self.policy = load_approval_policy(self.config.approval_policy_path)
         self.events = EventLog(self.config.state_dir / "events.jsonl")
         self.ledger = StripeLedger(self.config.state_dir / "stripe_ledger.json")
-        self.stripe = MockStripeAdapter(
+        self.stripe = make_stripe_adapter(
             self.ledger,
             mode=self.config.stripe_mode,
-            daily_budget_usd=self.config.daily_budget_usd,
+            daily_budget_usd=self.policy.daily_budget_usd,
+            currency=self.config.stripe_currency,
         )
-        self.nemotron = MockNemotronAdapter()
-        self.approvals = LocalPolicyApprovalAdapter()
+        self.nemotron = make_nemotron_adapter(
+            mode=self.config.nvidia_mode,
+            openrouter_model=self.config.openrouter_model,
+            nvidia_model=self.config.nvidia_model,
+            opencode_zen_model=self.config.opencode_zen_model,
+        )
+        self.approvals = LocalPolicyApprovalAdapter(self.policy)
         self.broker = MockBroker(self.config.state_dir / "portfolio_state.json")
 
     def _event(self, action: str, summary: str, **kwargs: Any) -> None:
@@ -61,30 +71,60 @@ class AutonomousQuantCompanyAgent:
             self.reset_demo_state()
         data = self.config.demo_data_dir
 
-        regime = self.nemotron.summarize_market_regime()
-        self._event("summarize_regime", regime.text, evidence={"provider": regime.provider})
-
-        spend = self.stripe.spend("premium market data sample", 2.00)
-        self._event("spend", spend.description, amount_usd=spend.amount_usd, evidence={"mode": spend.mode})
-
         production = load_json(data / "walkforward_report.json")
         rejected = load_json(data / "rejected_ensemble_2019.json")
+        comparison = compare_candidate_vs_rejected(production, rejected)
+        regime = self.nemotron.summarize_market_regime(
+            {
+                "candidate_sharpe": comparison["candidate_sharpe"],
+                "rejected_sharpe": comparison["rejected_sharpe"],
+                "max_gross_exposure": self.policy.max_gross_exposure,
+                "live_trading": self.policy.live_trading,
+            }
+        )
+        self._event(
+            "summarize_regime",
+            regime.text,
+            evidence={"provider": regime.provider, "model": regime.model, "live": regime.live},
+        )
+
+        spend_approval = self.approvals.review_spend(amount_usd=self.config.data_purchase_usd)
+        self._event(
+            "approve_spend",
+            spend_approval.reason,
+            approval_status=spend_approval.status,
+            evidence=spend_approval.checks,
+        )
+        if not spend_approval.approved:
+            raise RuntimeError(f"spend was not approved: {spend_approval.reason}")
+        spend = self.stripe.spend("premium market data sample", self.config.data_purchase_usd)
+        self._event(
+            "spend",
+            spend.description,
+            amount_usd=spend.amount_usd,
+            evidence={"mode": spend.mode, "external_id": spend.external_id, "status": spend.status},
+        )
+
         decision = passes_gate4(production)
         bad_decision = passes_gate4(rejected)
-        comparison = compare_candidate_vs_rejected(production, rejected)
         self._event("validate_strategy", decision.reason, evidence={"comparison": comparison})
         self._event("reject_strategy", bad_decision.reason, evidence={"source": "2019+ ensemble holdout"})
 
         raw_signal = load_latest_signal(data / "live_signals.jsonl")
-        policy = RiskPolicy(max_gross_exposure=4.0, max_active_positions=8, live_trading=self.config.live_trading)
-        capped_signal = cap_signal(raw_signal, max_gross=policy.max_gross_exposure)
-        assessment = RiskGuard(policy).assess(capped_signal, live_requested=False)
+        risk_policy = RiskPolicy(
+            max_gross_exposure=self.policy.max_gross_exposure,
+            max_active_positions=self.policy.max_active_positions,
+            max_single_position_weight=self.policy.max_single_position_weight,
+            live_trading=self.config.live_trading and self.policy.live_trading,
+        )
+        capped_signal = cap_signal(raw_signal, max_gross=risk_policy.max_gross_exposure)
+        assessment = RiskGuard(risk_policy).assess(capped_signal, live_requested=False)
         approval = self.approvals.review_trade(assessment)
         self._event(
             "approve_trade",
             approval.reason,
             approval_status=approval.status,
-            evidence={"gross_exposure": assessment.gross_exposure, "active_positions": assessment.active_positions},
+            evidence=approval.checks,
         )
 
         if approval.approved and decision.accepted:
@@ -94,8 +134,13 @@ class AutonomousQuantCompanyAgent:
             portfolio = self.broker.load()
             self._event("skip_execution", "trade not executed", approval_status=approval.status)
 
-        earn = self.stripe.earn("customer quant research report", 19.00)
-        self._event("earn", earn.description, amount_usd=earn.amount_usd, evidence={"mode": earn.mode})
+        earn = self.stripe.earn("customer quant research report", self.config.report_price_usd)
+        self._event(
+            "earn",
+            earn.description,
+            amount_usd=earn.amount_usd,
+            evidence={"mode": earn.mode, "external_id": earn.external_id, "status": earn.status},
+        )
 
         report_path = self.generate_report(decision=decision, comparison=comparison, approval=approval, portfolio=portfolio)
         self._event("generate_report", f"report written to {report_path}")
@@ -109,6 +154,9 @@ class AutonomousQuantCompanyAgent:
             stripe_net_usd=self.ledger.net(),
             report_path=str(report_path),
             event_count=len(self.events.read()),
+            nemotron_provider=regime.provider,
+            nemotron_live=regime.live,
+            stripe_mode=self.stripe.mode,
         )
 
     def generate_report(self, *, decision: Any, comparison: dict[str, float], approval: Any, portfolio: Any) -> Path:
@@ -126,6 +174,7 @@ class AutonomousQuantCompanyAgent:
 
 - Status: {approval.status}
 - Reason: {approval.reason}
+- Policy: {approval.policy_id}
 
 ## Paper portfolio
 
@@ -135,6 +184,7 @@ class AutonomousQuantCompanyAgent:
 
 ## Business ledger
 
+- Stripe mode: {self.stripe.mode}
 - Net operating result: ${self.ledger.net():.2f}
 """
         path.write_text(content, encoding="utf-8")
@@ -145,4 +195,10 @@ class AutonomousQuantCompanyAgent:
             "events": self.events.read(),
             "ledger": self.ledger.read(),
             "portfolio": self.broker.load().to_dict(),
+            "policy": asdict(self.policy),
+            "config": {
+                "stripe_mode": self.config.stripe_mode,
+                "nvidia_mode": self.config.nvidia_mode,
+                "live_trading": self.config.live_trading,
+            },
         }
