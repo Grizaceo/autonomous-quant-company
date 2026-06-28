@@ -1,0 +1,60 @@
+# configs/production.toml — CONFIGURACIÓN DE PRODUCCIÓN CANÓNICA
+# Basada en walkforward_pop_30: d_model=128, pop=30, h=30, 50 gens
+# Mean Sharpe: +3.255 ± 1.531 | 100% positive folds | MaxDD: 0.032
+
+[experiment]
+name = "hgat_production_v1"
+seed = 42
+algorithm = "es"
+
+[data]
+split = "train"
+use_costs = true
+reward_horizon = 30
+
+[es]
+pop_size = 30
+sigma_init = 0.025
+sigma_decay = 0.99975
+lr = 0.01
+weight_decay = 0.005
+rollout_horizon = 150
+n_jobs = 8
+noise_rank = 4
+k_windows = 3
+rollout_len = 150
+val_every = 20
+patience = 10
+max_generations = 50
+attention_entropy_bonus = 2.0
+lambda_turnover = 3.0
+risk_overlay = false
+dropout = 0.2
+d_model = 128
+
+[ppo]
+n_envs = 8
+total_steps = 1000000
+n_steps = 256
+n_epochs = 4
+minibatch = 128
+lr = 0.0003
+gamma = 0.99
+gae_lambda = 0.95
+clip = 0.2
+ent_coef = 0.01
+vf_coef = 0.5
+max_grad_norm = 0.5
+
+[output]
+save_dir = "models/hgat_production_v1"
+log_file = "logs/hgat_production_v1.log"
+
+# ── METADATOS DE VALIDACIÓN ──────────────────────────────────────────────
+# Source: experiments/results/walkforward_pop_30/walkforward_report.json
+# Folds: 5 | train_min: 500 | test_window: 100 | step_size: 50
+# Mean Sharpe: 3.255 | Std Sharpe: 1.531 | Sharpe Consistency: 100%
+# Mean MaxDD: 0.032 | Mean Return: 0.589 | Mean Hit Rate: 0.815
+# 
+# ⚠️ NO USAR ensemble_production (seeds 7,8,9) — falla en test window 2019+
+#    Sharpe -0.544, MaxDD 0.486 (experiments/results/ensemble_production.json)

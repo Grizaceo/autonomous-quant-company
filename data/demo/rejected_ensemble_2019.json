@@ -1,0 +1,47 @@
+{
+  "config": {
+    "d_model": 128,
+    "n_stocks": 10,
+    "reward_horizon": 30,
+    "lkn3_costs": true,
+    "n_generations": 30,
+    "pop_size": 30,
+    "rollout_horizon": 150,
+    "k_windows": 3,
+    "dropout": 0.2,
+    "risk_overlay": false,
+    "max_gross": 12,
+    "max_active": 8,
+    "window_size": 30,
+    "train_min": 500,
+    "test_window": 100,
+    "step_size": 50,
+    "n_folds": 5
+  },
+  "seed_weights": {
+    "7": 0.1758371709075293,
+    "8": 0.2821590544511216,
+    "9": 0.5420037746413491
+  },
+  "seeds_used": [
+    7,
+    8,
+    9
+  ],
+  "test_window": {
+    "start": "2019-01-01",
+    "days": 150
+  },
+  "metrics": {
+    "sharpe": -0.5435216996556389,
+    "sortino": -1.0558496583894106,
+    "max_drawdown": 0.4863542286162233,
+    "total_return": -0.32508891728200084,
+    "hit_rate": 0.45161290322580644,
+    "turnover": 0.13983739837398373,
+    "n_trades": 104,
+    "fitness": -2.1480703107438086,
+    "n_rollouts": 2,
+    "total_steps": 124
+  }
+}

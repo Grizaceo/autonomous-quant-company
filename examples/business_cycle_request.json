@@ -1,0 +1,6 @@
+{
+  "goal": "Run one autonomous quant company daily cycle in paper mode",
+  "budget_usd": 25,
+  "live_trading": false,
+  "require_approval": true
+}
