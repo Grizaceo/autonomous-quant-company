@@ -1,5 +1,20 @@
 # AQTC Pitch
 
+## Scientific integrity first
+
+AQTC **rejects** the 2019+ ensemble (Sharpe **-0.544**) before promoting HGAT+ES v4 (Sharpe **3.255**, **5/5** folds). Falsification is the product — not a footnote.
+
+**vs SOLVENT:** SOLVENT sells research briefs; AQTC sells evolved alpha proven with 5-fold walkforward.
+
+**Stripe proof:** test PaymentIntent **succeeded** — `docs/proof/stripe_test_paymentintent_redacted.json`
+
+### Slide numbers
+- Accepted: Sharpe **3.255**, 5/5 folds, MaxDD **0.032**
+- Rejected: Sharpe **-0.544**, MaxDD **0.486**
+- Business: spend $2, earn $19, **net $17**
+
+
+
 ## One-liner
 
 **No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
@@ -22,7 +37,7 @@ AQTC is an autonomous quant company that:
 
 1. **Proves alpha origin** — frozen Financial Lab HGAT+ES v4 walkforward evidence (Sharpe 3.255, 5 folds, 100% positive)
 2. **Falsifies bad strategies** — explicitly rejects 2019+ ensemble (Sharpe -0.544, MaxDD 0.486)
-3. **Runs operations** — Stripe spend/earn, NemoClaw approvals, paper MockBroker, customer reports
+3. **Runs operations** — Stripe spend/earn, NemoClaw-compatible policy boundary, paper MockBroker, customer reports
 4. **Integrates with Hermes** — CLI, MCP tools, FastAPI dashboard
 
 ## Hackathon alignment

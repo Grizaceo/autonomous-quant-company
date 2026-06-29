@@ -151,6 +151,8 @@ class StripeTestModeAdapter(MockStripeAdapter):
                 "description": description,
                 "metadata[agent]": "autonomous-quant-company",
                 "metadata[mode]": "hackathon-demo",
+                "payment_method_types[]": "card",
+                "automatic_payment_methods[enabled]": "false",
                 "payment_method": "pm_card_visa",
                 "confirm": "true",
             },

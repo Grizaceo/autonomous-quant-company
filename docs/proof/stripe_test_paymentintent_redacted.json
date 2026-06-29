@@ -1,0 +1,10 @@
+{
+  "amount_usd": 19.0,
+  "currency": "usd",
+  "description": "customer quant research report",
+  "external_id": "pi_3TncGX4qsu8xWISK0x5Rc0IY",
+  "mode": "stripe_test",
+  "note": "Redacted Stripe test PaymentIntent proof; no secrets stored.",
+  "status": "succeeded",
+  "timestamp": "2026-06-29T10:18:14Z"
+}

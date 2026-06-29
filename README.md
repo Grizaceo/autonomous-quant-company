@@ -1,6 +1,7 @@
 # Autonomous Quant Company
 
 **No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
+**Scientific integrity first:** AQTC leads with falsification — the 2019+ ensemble is **rejected** (Sharpe **-0.544**) before HGAT+ES v4 (Sharpe **3.255**, **5/5** folds) is promoted. Bad alpha is surfaced in the demo, report, and dashboard, not hidden.
 
 *From evolved alpha to invoice.* — HGAT+ES alpha, Hermes operations, Stripe revenue.
 
@@ -16,6 +17,8 @@ A Hermes-powered autonomous quantitative research company for the NVIDIA × Stri
 | Black box | Full provenance: `aqtc provenance --json`, MCP, API `/provenance` |
 
 **Key principle:** ES is verifiable alpha origin/provenance — not heavy live training in the demo.
+
+**vs SOLVENT:** SOLVENT sells research briefs; AQTC sells evolved alpha proven with 5-fold walkforward.
 
 ## Verified Financial Lab evidence
 
@@ -40,7 +43,7 @@ The agent runs a safe paper-trading business cycle:
 1. buys the data/compute it needs through a Stripe-style ledger,
 2. validates strategies with Financial Lab walkforward evidence,
 3. rejects unsafe strategies instead of hiding bad results,
-4. requests a NemoClaw-style approval before paper execution,
+4. requests NemoClaw-compatible policy approval before paper execution,
 5. updates a paper portfolio through a MockBroker,
 6. generates a customer report, and
 7. records revenue for that report.
@@ -52,7 +55,7 @@ This is not investment advice and does not execute live trades by default.
 ```mermaid
 flowchart TB
   CLI["aqtc CLI / MCP / FastAPI"] --> Agent["AutonomousQuantCompanyAgent"]
-  Agent --> Policy["ApprovalPolicy YAML + NemoClaw adapter"]
+  Agent --> Policy["ApprovalPolicy YAML + NemoClaw-compatible adapter"]
   Agent --> Nemotron["Nemotron adapter (mock or live)"]
   Agent --> Stripe["Stripe adapter (mock or test-mode)"]
   Agent --> FinLab["Financial Lab artifacts + provenance"]
@@ -70,7 +73,30 @@ flowchart TB
 - Ledger: spend **$2**, earn **$19**, net **$17**
 - Gross exposure capped at **4.0**
 
-**Revenue note:** mock mode records ledger entries locally. Stripe test mode creates real test PaymentIntents; when `STRIPE_SECRET_KEY` is set they are confirmed with `pm_card_visa` and logged as `succeeded`.
+**Stripe test:** redacted PaymentIntent proof shows **succeeded** (`docs/proof/stripe_test_paymentintent_redacted.json`).
+
+**Revenue note:** mock mode records ledger entries locally. Stripe test mode creates real test PaymentIntents; when `STRIPE_SECRET_KEY` is set they are confirmed with `pm_card_visa` and logged as `succeeded`. Capture instructions and generated redacted proof location: [docs/proof/](docs/proof/).
+
+## Judge quick reference
+
+- [Judge one-pager](docs/JUDGE_ONE_PAGER.md) — five claims with file-path evidence
+- [Proof manifest](data/demo/proof_manifest.generated.json) — SHA-256 hashes for alpha/proof artifacts (`python scripts/generate_proof_manifest.py` to regenerate)
+- Stripe test proof generated at `docs/proof/stripe_test_paymentintent_redacted.json` (regenerate with `bash scripts/capture_stripe_proof.sh` when `STRIPE_SECRET_KEY` is set)
+- All alpha artifacts are hash-addressed via the proof manifest
+
+## Why this is not prompt trading
+
+AQTC does not map natural-language prompts to trades. Production alpha comes from frozen **Financial Lab HGAT+ES v4** walkforward artifacts (`data/demo/walkforward_report.json`, `production.toml`, `manifest.json`). The demo validates pre-computed evidence, compares against a known-bad ensemble, and operates a paper portfolio — inspect with `aqtc provenance --json`.
+
+## Regulatory safety
+
+- Research and education demo only — **not investment advice**
+- No live broker execution by default (`live_broker_execution` denied in `examples/approval_policy.yaml`)
+- Paper **MockBroker** only; `AQTC_LIVE_TRADING=false`
+- Human approval required for spend above threshold unless `--approve-spend`
+- Designed for OpenShell deployment with a NemoClaw-compatible policy adapter; demo uses local deterministic guardrails
+
+See [docs/SAFETY_AND_COMPLIANCE.md](docs/SAFETY_AND_COMPLIANCE.md).
 
 ## Quick start
 
@@ -141,4 +167,6 @@ make lint
 make typecheck
 make test
 make smoke
+bash scripts/judge_smoke.sh
+bash scripts/reproduce_submission.sh   # full submission rehearsal
 ```

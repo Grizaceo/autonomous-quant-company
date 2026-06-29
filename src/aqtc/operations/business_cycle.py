@@ -13,7 +13,7 @@ from aqtc.financial_core.signals import cap_signal, load_latest_signal
 from aqtc.financial_core.validation import compare_candidate_vs_rejected, load_json, passes_gate4
 from aqtc.integrations.nemoclaw import LocalPolicyApprovalAdapter, load_approval_policy
 from aqtc.integrations.nvidia import make_nemotron_adapter
-from aqtc.integrations.stripe_skills import StripeLedger, make_stripe_adapter
+from aqtc.integrations.stripe_skills import StripeLedger, StripeLedgerEvent, make_stripe_adapter
 
 
 @dataclass(frozen=True)
@@ -34,6 +34,8 @@ class BusinessCycleResult:
     rejected_candidate_sharpe: float | None = None
     rejected_candidate_max_drawdown: float | None = None
     rejection_reason: str | None = None
+    spend_approval_status: str = "approved"
+    earn_status: str = "recorded"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -204,6 +206,7 @@ class AutonomousQuantCompanyAgent:
             spend_status=spend_status,
             provenance=provenance,
             bad_decision=bad_decision,
+            earn_event=earn,
         )
         self._event("generate_report", f"report written to {report_path}")
 
@@ -224,6 +227,8 @@ class AutonomousQuantCompanyAgent:
             rejected_candidate_sharpe=provenance["rejected"]["sharpe"],
             rejected_candidate_max_drawdown=provenance["rejected"]["max_drawdown"],
             rejection_reason=rejection_reason,
+            spend_approval_status=spend_approval.status,
+            earn_status=earn.status,
         )
 
     def generate_report(
@@ -236,6 +241,7 @@ class AutonomousQuantCompanyAgent:
         spend_status: str = "completed",
         provenance: dict[str, Any] | None = None,
         bad_decision: Any | None = None,
+        earn_event: StripeLedgerEvent | None = None,
     ) -> Path:
         provenance = provenance or load_alpha_provenance(self.config.demo_data_dir)
         accepted = provenance["accepted"]
@@ -245,7 +251,7 @@ class AutonomousQuantCompanyAgent:
         rejected_section = ""
         if bad_decision is not None:
             rejected_section = f"""
-## Rejected candidate
+## What was rejected
 
 - Name: {rejected["name"]}
 - Sharpe: {rejected["sharpe"]:.3f}
@@ -253,7 +259,34 @@ class AutonomousQuantCompanyAgent:
 - Reason: {rejected["reason"]}
 - Gate result: {bad_decision.reason}
 """
+        if earn_event and self.stripe.mode == "stripe_test" and earn_event.status == "succeeded":
+            revenue_proof = (
+                f"Stripe test PaymentIntent succeeded "
+                f"({earn_event.external_id}, ${earn_event.amount_usd:.2f})"
+            )
+        elif earn_event and self.stripe.mode == "stripe_test":
+            revenue_proof = (
+                f"Stripe test mode ({earn_event.status}); "
+                f"see docs/proof/ for redacted PaymentIntent artifact"
+            )
+        else:
+            revenue_proof = (
+                f"Mock ledger revenue ({self.stripe.mode}); "
+                f"run scripts/capture_stripe_proof.sh with STRIPE_SECRET_KEY to generate "
+                f"docs/proof/stripe_test_paymentintent_redacted.json"
+            )
         content = f"""# Autonomous Quant Company Report
+
+## Executive summary
+
+- Production alpha: {provenance["model"]} with mean Sharpe {accepted["mean_sharpe"]:.3f} across {accepted["n_folds"]} walkforward folds.
+- Falsification: {rejected["name"]} rejected (Sharpe {rejected["sharpe"]:.3f}).
+- Operations: paper rebalance approved; net ledger result ${self.ledger.net():.2f}.
+
+## What customer paid for
+
+- Customer report: quant research deliverable billed at ${self.config.report_price_usd:.2f}.
+- Data procurement: ${self.config.data_purchase_usd:.2f} market-data sample (status: {spend_status}).
 
 ## Research provenance
 
@@ -270,6 +303,14 @@ class AutonomousQuantCompanyAgent:
 - Reason: {decision.reason}
 - Sharpe delta vs rejected ensemble: {comparison["sharpe_delta"]:.3f}
 - Drawdown improvement vs rejected ensemble: {comparison["drawdown_delta"]:.3f}
+
+## Risk policy
+
+- Policy: {approval.policy_id}
+- Live trading: {self.policy.live_trading}
+- Denied actions: {", ".join(self.policy.deny_actions)}
+- Max gross exposure: {self.policy.max_gross_exposure}
+- Daily budget: ${self.policy.daily_budget_usd:.2f}
 
 ## Approval
 
@@ -291,6 +332,18 @@ class AutonomousQuantCompanyAgent:
 
 - Stripe mode: {self.stripe.mode}
 - Net operating result: ${self.ledger.net():.2f}
+
+## Revenue proof
+
+- {revenue_proof}
+
+## Not investment advice
+
+- Research and education demo only. No investment advice, no live broker execution, paper MockBroker by default.
+
+## Next paid report due
+
+- Next billing cycle: T+30 days from this report (demo schedule).
 """
         path.write_text(content, encoding="utf-8")
         return path

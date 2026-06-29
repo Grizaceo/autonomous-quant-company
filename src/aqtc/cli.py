@@ -123,23 +123,39 @@ def main(argv: list[str] | None = None) -> int:
         if args.json:
             print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
         else:
+            acc_sh = result.accepted_candidate_sharpe or 0.0
+            rej_sh = result.rejected_candidate_sharpe or 0.0
+            rej_dd = result.rejected_candidate_max_drawdown or 0.0
             print("AQTC Daily Cycle Complete")
-            print(f"Strategy accepted: {result.accepted_strategy}")
-            print(f"Rejected unsafe ensemble: {result.rejected_bad_strategy}")
-            if result.rejected_candidate_sharpe is not None:
-                print(
-                    f"Rejected evidence: Sharpe {result.rejected_candidate_sharpe:.3f}, "
-                    f"MaxDD {result.rejected_candidate_max_drawdown:.3f}"
-                )
-            if result.accepted_candidate_sharpe is not None:
-                print(f"Accepted evidence: Sharpe {result.accepted_candidate_sharpe:.3f}")
-            print(f"Approval: {result.approval_status}")
-            print(f"Paper positions: {result.portfolio_positions}")
-            print(f"Gross exposure: {result.gross_exposure:.3f}")
-            print(f"Stripe mode: {result.stripe_mode}")
-            print(f"Nemotron provider: {result.nemotron_provider} live={result.nemotron_live}")
-            print(f"Net operating result: ${result.stripe_net_usd:.2f}")
-            print(f"Report: {result.report_path}")
+            print()
+            print("DECISIONS (agent-visible)")
+            print(
+                f"  validate_strategy: accept={result.accepted_strategy} "
+                f"sharpe={acc_sh:.3f} (HGAT+ES v4 walkforward)"
+            )
+            print(
+                f"  reject_strategy: rejected={result.rejected_bad_strategy} "
+                f"sharpe={rej_sh:.3f} max_dd={rej_dd:.3f}"
+            )
+            if result.rejection_reason:
+                print(f"    reason: {result.rejection_reason}")
+            print(
+                f"  spend_gate: {result.spend_approval_status} "
+                f"(ledger spend_status={result.spend_status})"
+            )
+            print(
+                f"  trade_gate: {result.approval_status} "
+                f"(positions={result.portfolio_positions}, gross={result.gross_exposure:.3f})"
+            )
+            print(
+                f"  stripe_earn: {result.earn_status} "
+                f"(mode={result.stripe_mode}, net=${result.stripe_net_usd:.2f})"
+            )
+            print()
+            print("EVIDENCE")
+            print(f"  report: {result.report_path}")
+            print(f"  nemotron: provider={result.nemotron_provider} live={result.nemotron_live}")
+            print(f"  events_logged: {result.event_count}")
         return 0
 
     if args.command == "status":

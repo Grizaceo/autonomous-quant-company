@@ -105,6 +105,8 @@ def test_stripe_test_mode_earn_confirms_payment_intent(mock_secret, tmp_path):
     call_data = post.call_args[0][1]
     assert call_data["payment_method"] == "pm_card_visa"
     assert call_data["confirm"] == "true"
+    assert call_data["payment_method_types[]"] == "card"
+    assert call_data["automatic_payment_methods[enabled]"] == "false"
     assert event.status == "succeeded"
     assert event.metadata["collection"] == "succeeded"
     assert ledger.net() == 19.0

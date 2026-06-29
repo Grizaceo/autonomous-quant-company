@@ -1,5 +1,8 @@
 # Demo Script
 
+**~60s judge recording:** run `bash scripts/judge_demo_60s.sh` (provenance → `aqtc demo` DECISIONS → `judge_smoke.sh`).
+
+
 **Catch:** *From evolved alpha to invoice.*
 
 **Subtitle:** HGAT+ES alpha, Hermes operations, Stripe revenue.
@@ -28,9 +31,9 @@ Highlight:
 ## 0:45 Run the business cycle
 
 ```bash
-aqtc demo
-# or machine-readable:
-aqtc demo --json
+bash scripts/judge_demo_60s.sh   # ~60s screen recording
+aqtc demo                        # human DECISIONS block
+aqtc demo --json                 # machine-readable
 ```
 
 Show:
