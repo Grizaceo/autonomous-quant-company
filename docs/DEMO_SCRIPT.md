@@ -1,7 +1,9 @@
 # Demo Script
 
-**~60s judge recording:** run `bash scripts/judge_demo_60s.sh` (provenance → `aqtc demo` DECISIONS → `judge_smoke.sh`).
+**Judge screen recording (~60s target):** run `bash scripts/judge_demo_60s.sh`.
 
+- Step 1 prints HGAT+ES provenance; step 2 runs `demo --stripe-mode stripe_test --approve-spend` and shows the **DECISIONS** block.
+- With `.env` and `STRIPE_SECRET_KEY` set, expect `stripe_earn: succeeded` on the earn line; without a key, the cycle falls back to `stripe_earn: mock_recorded` (mock ledger).
 
 **Catch:** *From evolved alpha to invoice.*
 
@@ -31,10 +33,13 @@ Highlight:
 ## 0:45 Run the business cycle
 
 ```bash
-bash scripts/judge_demo_60s.sh   # ~60s screen recording
-aqtc demo                        # human DECISIONS block
+bash scripts/judge_demo_60s.sh   # ~60s recording (provenance + stripe_test demo)
+# manual equivalent:
+aqtc demo --stripe-mode stripe_test --approve-spend
 aqtc demo --json                 # machine-readable
 ```
+
+Show the **DECISIONS** block; with Stripe test credentials, `stripe_earn: succeeded`.
 
 Show:
 
