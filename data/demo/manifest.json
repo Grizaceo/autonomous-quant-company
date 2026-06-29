@@ -1,0 +1,33 @@
+{
+  "bundle": "aqtc-demo-evidence",
+  "version": "1.0.0",
+  "engine": "Financial Lab",
+  "model": "HGAT+ES v4",
+  "algorithm": "evolution_strategies",
+  "genotype_dim": 19,
+  "artifacts": {
+    "walkforward_report": "walkforward_report.json",
+    "rejected_ensemble": "rejected_ensemble_2019.json",
+    "production_config": "production.toml",
+    "live_signals": "live_signals.jsonl"
+  },
+  "production_config": {
+    "d_model": 128,
+    "pop_size": 30,
+    "reward_horizon": 30,
+    "rollout_horizon": 150,
+    "max_generations": 50
+  },
+  "accepted": {
+    "mean_sharpe": 3.255,
+    "n_folds": 5,
+    "positive_fold_ratio": 1.0,
+    "mean_max_drawdown": 0.032
+  },
+  "rejected": {
+    "name": "2019+ ensemble",
+    "sharpe": -0.544,
+    "max_drawdown": 0.486,
+    "reason": "failed recent-regime robustness"
+  }
+}

@@ -28,7 +28,7 @@ Source artifacts:
 - `data/demo/walkforward_report.json` — 5-fold walkforward summary
 - `data/demo/production.toml` — canonical ES hyperparameters
 - `data/demo/live_signals.jsonl` — paper-trading signal snapshot
-- `data/demo/manifest.json` — frozen evidence bundle metadata (see P4)
+- `data/demo/manifest.json` — frozen evidence bundle metadata
 
 ## Rejected candidate: 2019+ ensemble
 
