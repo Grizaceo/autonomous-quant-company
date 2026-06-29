@@ -2,6 +2,16 @@
 
 AQTC ships with deterministic mocks by default. Live integrations are opt-in.
 
+## Alpha provenance vs live ES
+
+| Surface | Behavior |
+|---------|----------|
+| `aqtc provenance` | Reads frozen Financial Lab artifacts from `data/demo/` |
+| `aqtc demo` | Validates pre-computed walkforward evidence — **no ES training** |
+| Financial Lab (offline) | HGAT+ES v4 evolution produced the artifacts |
+
+ES is alpha **origin/provenance**, not a runtime spectacle in the demo.
+
 | Component | Default (P0) | Live / test mode (P1) | Notes |
 |-----------|--------------|------------------------|-------|
 | Stripe ledger | `AQTC_STRIPE_MODE=mock` | `stripe_test` + `STRIPE_SECRET_KEY` | Test-mode `earn` confirms PaymentIntents with `pm_card_visa`; outbound spend stays a budgeted ledger event. |

@@ -2,9 +2,42 @@
 
 [![CI](https://github.com/gris/autonomous-quant-company/actions/workflows/ci.yml/badge.svg)](https://github.com/gris/autonomous-quant-company/actions/workflows/ci.yml)
 
+**No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
+
+*From evolved alpha to invoice.* — HGAT+ES alpha, Hermes operations, Stripe revenue.
+
 A Hermes-powered autonomous quantitative research company for the NVIDIA × Stripe × Nous Research Hermes Agent Accelerated Business Hackathon.
 
-The agent runs a safe paper-trading business loop:
+## What makes this different
+
+| Typical AI trading demo | AQTC |
+|-------------------------|------|
+| Prompt → signal → chart | Financial Lab **HGAT+ES v4** alpha with frozen walkforward evidence |
+| Hides bad backtests | **Rejects** failed candidates (2019+ ensemble Sharpe **-0.544**) |
+| No business loop | Buys data, validates, approves, paper-trades, **bills $19** via Stripe |
+| Black box | Full provenance: `aqtc provenance --json`, MCP, API `/provenance` |
+
+**Key principle:** ES is verifiable alpha origin/provenance — not heavy live training in the demo.
+
+## Verified Financial Lab evidence
+
+Curated artifacts under `data/demo/` — no runtime ES training:
+
+| Metric | Accepted (HGAT+ES v4) | Rejected (2019+ ensemble) |
+|--------|----------------------|---------------------------|
+| Mean Sharpe | **3.255** | **-0.544** |
+| Walkforward folds | 5 (100% positive) | — |
+| Mean max drawdown | **0.032** | **0.486** |
+| Genotype φ | 19D | — |
+
+```bash
+aqtc provenance          # human-readable provenance summary
+aqtc provenance --json   # machine-readable
+```
+
+## Business loop
+
+The agent runs a safe paper-trading business cycle:
 
 1. buys the data/compute it needs through a Stripe-style ledger,
 2. validates strategies with Financial Lab walkforward evidence,
@@ -14,7 +47,7 @@ The agent runs a safe paper-trading business loop:
 6. generates a customer report, and
 7. records revenue for that report.
 
-This is not investment advice and does not execute live trades by default. It is a business-operations demo for autonomous financial research.
+This is not investment advice and does not execute live trades by default.
 
 ## Architecture
 
@@ -24,26 +57,12 @@ flowchart TB
   Agent --> Policy["ApprovalPolicy YAML + NemoClaw adapter"]
   Agent --> Nemotron["Nemotron adapter (mock or live)"]
   Agent --> Stripe["Stripe adapter (mock or test-mode)"]
-  Agent --> FinLab["Financial Lab artifacts"]
+  Agent --> FinLab["Financial Lab artifacts + provenance"]
   Agent --> Broker["MockBroker (paper)"]
   Agent --> Ledger["Local state: events, ledger, report"]
   Policy -->|deny live_broker_execution| Broker
   Stripe -->|earn $19 / spend $2| Ledger
 ```
-
-## Why it fits the hackathon
-
-- **Earn:** the agent bills for generated quantitative research reports ($19 in the demo).
-- **Spend:** the agent spends from a bounded budget for market data/compute ($2 in the demo).
-- **Run operations:** validation, risk review, paper execution, reporting, and ledger updates.
-- **NVIDIA alignment:** Nemotron/NemoClaw integration points are explicit; mock is the default.
-- **Stripe alignment:** Stripe Skills boundaries are explicit; mock ledger by default, test-mode PaymentIntents when configured.
-
-## Verified Financial Lab evidence included
-
-- production walkforward: mean Sharpe **3.255**, 5/5 folds positive, mean max drawdown **0.032**
-- rejected 2019+ ensemble: Sharpe **-0.544**, max drawdown **0.486**
-- live paper signals and canonical production config under `data/demo/`
 
 ## Demo results (deterministic mock mode)
 
@@ -53,7 +72,7 @@ flowchart TB
 - Ledger: spend **$2**, earn **$19**, net **$17**
 - Gross exposure capped at **4.0**
 
-**Revenue note:** mock mode records ledger entries locally. Stripe test mode creates real test PaymentIntents; when `STRIPE_SECRET_KEY` is set they are confirmed with `pm_card_visa` and logged as `succeeded`. Without a key, test-mode adapters fall back to mock ledger entries.
+**Revenue note:** mock mode records ledger entries locally. Stripe test mode creates real test PaymentIntents; when `STRIPE_SECRET_KEY` is set they are confirmed with `pm_card_visa` and logged as `succeeded`.
 
 ## Quick start
 
@@ -78,6 +97,8 @@ docker compose up api
 ```bash
 aqtc demo                    # run deterministic business cycle
 aqtc demo --json             # machine-readable result
+aqtc provenance              # Financial Lab alpha provenance
+aqtc provenance --json
 aqtc demo --approve-spend    # bypass human approval for large spends
 aqtc status                  # local state/event ledger
 aqtc report --out report.md  # copy existing report (non-destructive)
@@ -91,9 +112,9 @@ make serve                   # FastAPI dashboard on :8010
 - `live_broker_execution` denied in `examples/approval_policy.yaml`
 - daily budget and approval thresholds canonical in YAML (env override only when set)
 - spend above threshold requires human approval unless `--approve-spend` / `AQTC_AUTO_APPROVE_SPEND`
-- paper MockBroker only in P0
+- paper MockBroker only
 
-See [docs/REAL_VS_MOCK.md](docs/REAL_VS_MOCK.md) for integration details.
+See [docs/REAL_VS_MOCK.md](docs/REAL_VS_MOCK.md) and [docs/ALPHA_PROVENANCE.md](docs/ALPHA_PROVENANCE.md).
 
 ## Live quickstart (optional)
 
@@ -106,12 +127,11 @@ aqtc regime --provider openrouter --json
 aqtc demo --nvidia-mode openrouter --json
 ```
 
-`auto` tries OpenRouter → NVIDIA NIM → OpenCode Zen → mock. Explicit providers without keys return `{provider}-unavailable`.
-
 ## MCP server
 
 ```bash
 aqtc-mcp
+fastmcp call src/aqtc/mcp_server.py aqtc_get_provenance --json
 fastmcp call src/aqtc/mcp_server.py aqtc_get_report --json
 ```
 
@@ -124,10 +144,3 @@ make typecheck
 make test
 make smoke
 ```
-
-## Roadmap
-
-- P0: deterministic local demo, tests, curated Financial Lab artifacts ✅
-- P1: Stripe test-mode adapter, Nemotron live adapter ✅
-- P2: dashboard lite, Docker compose, MCP server ✅
-- P3: public readiness, video script, submission assets

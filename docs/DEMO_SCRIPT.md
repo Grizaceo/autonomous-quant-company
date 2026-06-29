@@ -1,10 +1,31 @@
 # Demo Script
 
-## 0:00 Hook
+**Catch:** *From evolved alpha to invoice.*
 
-Most trading bots only produce signals. This is an autonomous quant company: it buys resources, validates strategies, rejects unsafe candidates, executes paper operations, and bills for research.
+**Subtitle:** HGAT+ES alpha, Hermes operations, Stripe revenue.
 
-## 0:20 Run the agent
+---
+
+## 0:00 Hook — Not prompt trading
+
+> "This is not another AI trading bot. It's a micro-compañía cuantitativa: alpha evolved by Financial Lab, validated by walkforward, operated by Hermes, billed through Stripe."
+
+Show README headline. Emphasize: **no live ES training in the demo**.
+
+## 0:20 Alpha provenance
+
+```bash
+aqtc provenance --json
+```
+
+Highlight:
+
+- HGAT+ES v4, 19D genotype φ
+- Mean Sharpe **3.255**, 5 folds, 100% positive
+- Mean max drawdown **0.032**
+- Rejected 2019+ ensemble: Sharpe **-0.544**, MaxDD **0.486**
+
+## 0:45 Run the business cycle
 
 ```bash
 aqtc demo
@@ -12,39 +33,56 @@ aqtc demo
 aqtc demo --json
 ```
 
-Show the business cycle completing with net operating result **$17.00**.
+Show:
 
-## 0:45 Validation
+- Strategy accepted: **True**
+- Unsafe ensemble rejected: **True**
+- Approval: **approved**
+- Net operating result: **$17.00**
 
-Show production walkforward Sharpe 3.255 and rejected ensemble Sharpe -0.544.
-
-## 1:15 Safety
+## 1:15 Safety and falsification
 
 Show risk approval, spend approval under threshold ($2 < $5), and live-trading disabled.
-If spend exceeds the approval threshold, the cycle skips procurement and continues unless `--approve-spend` is set.
 
-## 1:45 Business
+Point out the **rejected candidate** evidence — AQTC does not hide bad backtests.
+
+## 1:45 Business ledger
 
 Show Stripe-style ledger: spend $2, earn $19, net +$17.
-`aqtc report --out demo_report.md` copies the existing report without re-running the cycle.
-Use `aqtc report --run --out demo_report.md` to regenerate.
 
-## 2:00 Live integrations (optional)
+```bash
+aqtc report --out demo_report.md
+# non-destructive copy of existing report
+aqtc report --run --out demo_report.md
+# regenerate then copy
+```
+
+Report sections: Research provenance, Rejected candidate, Business ledger.
+
+## 2:00 Dashboard (optional)
+
+```bash
+make serve
+# open http://127.0.0.1:8010/
+```
+
+Cards: Alpha provenance, Rejected strategy, Policy, Business, Report preview.
+
+## 2:15 MCP + API (optional)
+
+```bash
+fastmcp inspect src/aqtc/mcp_server.py:mcp
+fastmcp call src/aqtc/mcp_server.py aqtc_get_provenance --json
+curl http://127.0.0.1:8010/provenance
+```
+
+## 2:30 Live integrations (optional)
 
 ```bash
 aqtc regime --provider openrouter --json
 aqtc demo --stripe-mode stripe_test --json
 ```
 
-Stripe test mode confirms PaymentIntents with `pm_card_visa` when `STRIPE_SECRET_KEY` is set.
+## 2:45 Close — From evolved alpha to invoice
 
-## 2:15 Close
-
-Useful, viable, and presentable: a real operations loop for autonomous financial research.
-
-Dashboard (optional):
-
-```bash
-make serve
-# open http://127.0.0.1:8010/
-```
+> "Financial Lab evolved the alpha. Walkforward validated it. Hermes operates the company. Stripe records the revenue. From evolved alpha to invoice."
