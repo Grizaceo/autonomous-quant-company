@@ -1,6 +1,8 @@
 # AQTC hackathon submission copy
 
-**Repo:** (no git remote origin configured — set before public submission)
+> **Antes de enviar:** reemplaza `YOUR_GITHUB_REPO_URL` con tu repo público (tras `git remote add origin … && git push -u origin main`).
+
+**Repo:** YOUR_GITHUB_REPO_URL
 
 ## Tweet (≤280 chars)
 
@@ -12,8 +14,13 @@ Not prompt trading — evolved HGAT+ES alpha (Sharpe 3.255, 5/5 walkforward fold
 
 2/ Scientific integrity: we publish the failure — 2019+ ensemble rejected at Sharpe -0.544 / MaxDD 0.486. `aqtc demo` prints a DECISIONS block (accept/reject, spend gate, trade gate, Stripe earn).
 
-3/ Business loop: spend $2, earn $19, net $17. Stripe test PaymentIntent succeeded (redacted proof in repo). Paper MockBroker only; live broker execution denied by policy. Repo: (no git remote origin configured — set before public submission)
+3/ Business loop: spend $2, earn $19, net $17. Stripe test PaymentIntent succeeded (redacted proof in repo). Paper MockBroker only; live broker execution denied by policy. Repo: YOUR_GITHUB_REPO_URL
 
 ## Discord blurb
 
-**AQTC — Autonomous Quant Company** for the Hermes hackathon. Evolved HGAT+ES alpha (Sharpe 3.255, 5-fold walkforward), explicit rejection of bad ensemble (-0.544), Hermes-operated business cycle with Stripe revenue proof, NemoClaw-compatible policy adapter, MCP + API. Demo: `aqtc demo` (~60s script: `scripts/judge_demo_60s.sh`). (no git remote origin configured — set before public submission)
+**AQTC — Autonomous Quant Company** for the Hermes hackathon. Evolved HGAT+ES alpha (Sharpe 3.255, 5-fold walkforward), explicit rejection of bad ensemble (-0.544), Hermes-operated business cycle with Stripe revenue proof, NemoClaw-compatible policy adapter, MCP + API. Demo: `aqtc demo` (~60s script: `scripts/judge_demo_60s.sh`). YOUR_GITHUB_REPO_URL
+
+## Typeform / video
+
+- **Video:** `docs/demo-video/aqtc_demo.mp4` (sube a X/Twitter con el tweet)
+- **Re-record opcional (Stripe live en terminal):** `bash scripts/judge_demo_60s.sh`
