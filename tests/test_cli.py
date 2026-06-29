@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from aqtc.cli import main
 
 
@@ -9,6 +11,24 @@ def test_cli_demo_json(isolated_env, capsys):
     data = json.loads(capsys.readouterr().out)
     assert data["stripe_net_usd"] == 17.0
     assert data["accepted_strategy"] is True
+    assert data["accepted_candidate_sharpe"] == pytest.approx(3.255, abs=0.01)
+    assert data["rejected_candidate_sharpe"] == pytest.approx(-0.544, abs=0.01)
+
+
+def test_cli_provenance_json(isolated_env, capsys):
+    code = main(["provenance", "--json"])
+    assert code == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["model"] == "HGAT+ES v4"
+    assert data["accepted"]["mean_sharpe"] == pytest.approx(3.255, abs=0.01)
+
+
+def test_cli_provenance_human(isolated_env, capsys):
+    code = main(["provenance"])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "HGAT+ES v4" in out
+    assert "3.255" in out
 
 
 def test_cli_status(isolated_env, capsys):

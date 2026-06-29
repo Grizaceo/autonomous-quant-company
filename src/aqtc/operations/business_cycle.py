@@ -7,6 +7,7 @@ from typing import Any
 from aqtc.config import AQTCConfig
 from aqtc.events import BusinessEvent, EventLog
 from aqtc.financial_core.portfolio import MockBroker
+from aqtc.financial_core.provenance import load_alpha_provenance
 from aqtc.financial_core.risk import RiskGuard, RiskPolicy
 from aqtc.financial_core.signals import cap_signal, load_latest_signal
 from aqtc.financial_core.validation import compare_candidate_vs_rejected, load_json, passes_gate4
@@ -29,6 +30,10 @@ class BusinessCycleResult:
     nemotron_live: bool
     stripe_mode: str
     spend_status: str = "completed"
+    accepted_candidate_sharpe: float | None = None
+    rejected_candidate_sharpe: float | None = None
+    rejected_candidate_max_drawdown: float | None = None
+    rejection_reason: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -82,6 +87,7 @@ class AutonomousQuantCompanyAgent:
             self.config.auto_approve_spend if auto_approve_spend is None else auto_approve_spend
         )
         data = self.config.demo_data_dir
+        provenance = load_alpha_provenance(data)
 
         production = load_json(data / "walkforward_report.json")
         rejected = load_json(data / "rejected_ensemble_2019.json")
@@ -140,9 +146,17 @@ class AutonomousQuantCompanyAgent:
 
         decision = passes_gate4(production)
         bad_decision = passes_gate4(rejected)
+        rejection_reason = provenance["rejected"]["reason"]
         self._event("validate_strategy", decision.reason, evidence={"comparison": comparison})
         self._event(
-            "reject_strategy", bad_decision.reason, evidence={"source": "2019+ ensemble holdout"}
+            "reject_strategy",
+            bad_decision.reason,
+            evidence={
+                "source": provenance["rejected"]["name"],
+                "sharpe": provenance["rejected"]["sharpe"],
+                "max_drawdown": provenance["rejected"]["max_drawdown"],
+                "reason": rejection_reason,
+            },
         )
 
         raw_signal = load_latest_signal(data / "live_signals.jsonl")
@@ -188,6 +202,8 @@ class AutonomousQuantCompanyAgent:
             approval=approval,
             portfolio=portfolio,
             spend_status=spend_status,
+            provenance=provenance,
+            bad_decision=bad_decision,
         )
         self._event("generate_report", f"report written to {report_path}")
 
@@ -204,6 +220,10 @@ class AutonomousQuantCompanyAgent:
             nemotron_live=regime.live,
             stripe_mode=self.stripe.mode,
             spend_status=spend_status,
+            accepted_candidate_sharpe=provenance["accepted"]["mean_sharpe"],
+            rejected_candidate_sharpe=provenance["rejected"]["sharpe"],
+            rejected_candidate_max_drawdown=provenance["rejected"]["max_drawdown"],
+            rejection_reason=rejection_reason,
         )
 
     def generate_report(
@@ -214,10 +234,36 @@ class AutonomousQuantCompanyAgent:
         approval: Any,
         portfolio: Any,
         spend_status: str = "completed",
+        provenance: dict[str, Any] | None = None,
+        bad_decision: Any | None = None,
     ) -> Path:
+        provenance = provenance or load_alpha_provenance(self.config.demo_data_dir)
+        accepted = provenance["accepted"]
+        rejected = provenance["rejected"]
+        cfg = provenance["production_config"]
         path = self.config.state_dir / "customer_report.md"
+        rejected_section = ""
+        if bad_decision is not None:
+            rejected_section = f"""
+## Rejected candidate
+
+- Name: {rejected["name"]}
+- Sharpe: {rejected["sharpe"]:.3f}
+- Max drawdown: {rejected["max_drawdown"]:.3f}
+- Reason: {rejected["reason"]}
+- Gate result: {bad_decision.reason}
+"""
         content = f"""# Autonomous Quant Company Report
 
+## Research provenance
+
+- Engine: {provenance["engine"]}
+- Model: {provenance["model"]} ({provenance["genotype_dim"]}D genotype)
+- Algorithm: {provenance["algorithm"]}
+- Mean Sharpe: {accepted["mean_sharpe"]:.3f} ({accepted["n_folds"]} folds, {accepted["positive_fold_ratio"]:.0%} positive)
+- Mean max drawdown: {accepted["mean_max_drawdown"]:.3f}
+- Config: d_model={cfg["d_model"]}, pop_size={cfg["pop_size"]}, reward_horizon={cfg["reward_horizon"]}
+{rejected_section}
 ## Strategy decision
 
 - Accepted production strategy: {decision.accepted}
@@ -257,6 +303,9 @@ class AutonomousQuantCompanyAgent:
             )
         return path
 
+    def get_provenance(self) -> dict[str, Any]:
+        return load_alpha_provenance(self.config.demo_data_dir)
+
     def status(self) -> dict[str, Any]:
         report_path = self.config.state_dir / "customer_report.md"
         return {
@@ -264,6 +313,7 @@ class AutonomousQuantCompanyAgent:
             "ledger": self.ledger.read(),
             "portfolio": self.broker.load().to_dict(),
             "policy": asdict(self.policy),
+            "provenance": self.get_provenance(),
             "config": {
                 "stripe_mode": self.config.stripe_mode,
                 "nvidia_mode": self.config.nvidia_mode,

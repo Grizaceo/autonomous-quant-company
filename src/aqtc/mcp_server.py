@@ -39,14 +39,31 @@ def aqtc_run_cycle(reset: bool = True) -> dict[str, Any]:
     return _agent().run_daily_cycle(reset=reset).to_dict()
 
 
+def aqtc_get_provenance() -> dict[str, Any]:
+    """Return frozen Financial Lab HGAT+ES alpha provenance from demo artifacts."""
+    return _agent().get_provenance()
+
+
 def aqtc_get_report(run: bool = False) -> dict[str, Any]:
     """Return the customer report. Set run=true to execute a fresh cycle first."""
     agent = _agent()
     report = Path(agent.config.state_dir / "customer_report.md")
-    if run or not report.exists():
-        agent.run_daily_cycle(reset=run or not report.exists())
+    if run:
+        agent.run_daily_cycle(reset=True)
         report = Path(agent.config.state_dir / "customer_report.md")
-    return {"path": str(report), "content": report.read_text(encoding="utf-8")}
+        return {"exists": True, "path": str(report), "content": report.read_text(encoding="utf-8")}
+    if not report.exists():
+        return {
+            "exists": False,
+            "path": str(report),
+            "content": None,
+            "hint": "Run `aqtc demo` or call aqtc_run_cycle to generate a report.",
+        }
+    return {
+        "exists": True,
+        "path": str(report),
+        "content": report.read_text(encoding="utf-8"),
+    }
 
 
 def aqtc_get_events() -> dict[str, Any]:
@@ -59,6 +76,7 @@ if FastMCP is not None:
     mcp = FastMCP(name="Autonomous Quant Company")
     mcp.tool(aqtc_status)
     mcp.tool(aqtc_run_cycle)
+    mcp.tool(aqtc_get_provenance)
     mcp.tool(aqtc_get_report)
     mcp.tool(aqtc_get_events)
 else:  # pragma: no cover

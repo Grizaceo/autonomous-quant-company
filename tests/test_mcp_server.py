@@ -25,16 +25,34 @@ def test_mcp_tool_functions_return_dicts(isolated_mcp):
     status = mcp_server.aqtc_status()
     assert "events" in status
     report = mcp_server.aqtc_get_report()
+    assert report["exists"] is True
     assert "Autonomous Quant Company Report" in report["content"]
     events = mcp_server.aqtc_get_events()
     assert events["count"] >= 1
 
 
+def test_mcp_get_provenance(isolated_mcp):
+    prov = mcp_server.aqtc_get_provenance()
+    assert prov["model"] == "HGAT+ES v4"
+    assert prov["accepted"]["mean_sharpe"] == pytest.approx(3.255, abs=0.01)
+
+
 def test_mcp_get_report_read_only(isolated_mcp, tmp_path):
     report_path = tmp_path / "customer_report.md"
     report_path.write_text("# Existing report\n", encoding="utf-8")
-    content = mcp_server.aqtc_get_report(run=False)["content"]
-    assert content.startswith("# Existing report")
+    result = mcp_server.aqtc_get_report(run=False)
+    assert result["exists"] is True
+    assert result["content"].startswith("# Existing report")
+
+
+def test_mcp_get_report_missing_no_run(isolated_mcp, tmp_path):
+    report_path = tmp_path / "customer_report.md"
+    if report_path.exists():
+        report_path.unlink()
+    result = mcp_server.aqtc_get_report(run=False)
+    assert result["exists"] is False
+    assert result["content"] is None
+    assert "hint" in result
 
 
 def test_mcp_module_exports_tools():

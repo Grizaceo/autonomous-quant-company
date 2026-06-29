@@ -6,6 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from .config import AQTCConfig
+from .financial_core.provenance import load_alpha_provenance, summarize_alpha_provenance
 from .integrations.nvidia import make_nemotron_adapter
 from .operations.business_cycle import AutonomousQuantCompanyAgent
 
@@ -58,6 +59,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
     )
     regime.add_argument("--json", action="store_true")
+
+    provenance = sub.add_parser("provenance", help="show Financial Lab alpha provenance")
+    provenance.add_argument("--json", action="store_true")
     return parser
 
 
@@ -103,6 +107,15 @@ def main(argv: list[str] | None = None) -> int:
             print(summary.text)
         return 0
 
+    if args.command == "provenance":
+        cfg = AQTCConfig()
+        data = load_alpha_provenance(cfg.demo_data_dir)
+        if args.json:
+            print(json.dumps(data, indent=2, sort_keys=True))
+        else:
+            print(summarize_alpha_provenance(cfg.demo_data_dir))
+        return 0
+
     agent = AutonomousQuantCompanyAgent(_config_from_args(args))
 
     if args.command == "demo":
@@ -113,6 +126,13 @@ def main(argv: list[str] | None = None) -> int:
             print("AQTC Daily Cycle Complete")
             print(f"Strategy accepted: {result.accepted_strategy}")
             print(f"Rejected unsafe ensemble: {result.rejected_bad_strategy}")
+            if result.rejected_candidate_sharpe is not None:
+                print(
+                    f"Rejected evidence: Sharpe {result.rejected_candidate_sharpe:.3f}, "
+                    f"MaxDD {result.rejected_candidate_max_drawdown:.3f}"
+                )
+            if result.accepted_candidate_sharpe is not None:
+                print(f"Accepted evidence: Sharpe {result.accepted_candidate_sharpe:.3f}")
             print(f"Approval: {result.approval_status}")
             print(f"Paper positions: {result.portfolio_positions}")
             print(f"Gross exposure: {result.gross_exposure:.3f}")

@@ -1,3 +1,5 @@
+import pytest
+
 from aqtc.config import AQTCConfig
 from aqtc.operations.business_cycle import AutonomousQuantCompanyAgent
 from aqtc.paths import DEMO_DATA_DIR
@@ -14,3 +16,10 @@ def test_business_cycle_end_to_end(tmp_path):
     assert result.stripe_net_usd == 17.0
     assert result.event_count >= 7
     assert result.spend_status == "completed"
+    assert result.accepted_candidate_sharpe == pytest.approx(3.255, abs=0.01)
+    assert result.rejected_candidate_sharpe == pytest.approx(-0.544, abs=0.01)
+    assert result.rejection_reason == "failed recent-regime robustness"
+    report = (tmp_path / "customer_report.md").read_text(encoding="utf-8")
+    assert "## Research provenance" in report
+    assert "## Rejected candidate" in report
+    assert "## Business ledger" in report
