@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autonomous-quant-company"
-version = "0.2.0"
+version = "0.2.8"
 description = "Hermes-powered autonomous quantitative research company demo for NVIDIA x Stripe x Nous hackathon"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "DAVI + Cristobal"}]
 dependencies = [
     "numpy>=1.24",
@@ -66,5 +66,9 @@ disallow_untyped_defs = false
 check_untyped_defs = false
 ignore_missing_imports = true
 disable_error_code = ["no-any-return", "misc", "assignment", "arg-type"]
-exclude = ["src/aqtc/financial_core/harness"]
+exclude = [
+    "^build/",
+    "^\\.venv/",
+    "^src/autonomous_quant_company\\.egg-info/",
+]
 packages = ["aqtc"]

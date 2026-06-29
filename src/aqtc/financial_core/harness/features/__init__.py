@@ -67,11 +67,17 @@ class MACDTool(BaseFeatureTool):
                 features.append([0.0] * 3)
                 continue
 
-            close = df["close"].values
-            ema_fast = pd.Series(close).ewm(span=fast, adjust=False).mean().values
-            ema_slow = pd.Series(close).ewm(span=slow, adjust=False).mean().values
+            close = df["close"].to_numpy(dtype=float)
+            ema_fast = np.asarray(
+                pd.Series(close).ewm(span=fast, adjust=False).mean().to_numpy(), dtype=float
+            )
+            ema_slow = np.asarray(
+                pd.Series(close).ewm(span=slow, adjust=False).mean().to_numpy(), dtype=float
+            )
             macd = ema_fast - ema_slow
-            macd_signal = pd.Series(macd).ewm(span=signal, adjust=False).mean().values
+            macd_signal = np.asarray(
+                pd.Series(macd).ewm(span=signal, adjust=False).mean().to_numpy(), dtype=float
+            )
             histogram = macd - macd_signal
 
             # Normalize by price

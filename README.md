@@ -1,7 +1,5 @@
 # Autonomous Quant Company
 
-[![CI](https://github.com/gris/autonomous-quant-company/actions/workflows/ci.yml/badge.svg)](https://github.com/gris/autonomous-quant-company/actions/workflows/ci.yml)
-
 **No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
 
 *From evolved alpha to invoice.* — HGAT+ES alpha, Hermes operations, Stripe revenue.
@@ -119,7 +117,7 @@ See [docs/REAL_VS_MOCK.md](docs/REAL_VS_MOCK.md) and [docs/ALPHA_PROVENANCE.md](
 ## Live quickstart (optional)
 
 ```bash
-export STRIPE_SECRET_KEY=sk_test_...
+export STRIPE_SECRET_KEY=<your-stripe-test-secret-key>
 aqtc demo --stripe-mode stripe_test --json
 
 export OPENROUTER_API_KEY=...

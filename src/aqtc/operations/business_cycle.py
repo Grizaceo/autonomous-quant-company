@@ -164,10 +164,10 @@ class AutonomousQuantCompanyAgent:
             max_gross_exposure=self.policy.max_gross_exposure,
             max_active_positions=self.policy.max_active_positions,
             max_single_position_weight=self.policy.max_single_position_weight,
-            live_trading=self.config.live_trading and self.policy.live_trading,
+            live_trading=self.policy.live_trading,
         )
         capped_signal = cap_signal(raw_signal, max_gross=risk_policy.max_gross_exposure)
-        live_requested = self.config.live_trading and self.policy.live_trading
+        live_requested = self.config.live_trading
         assessment = RiskGuard(risk_policy).assess(capped_signal, live_requested=live_requested)
         approval = self.approvals.review_trade(assessment, live_requested=live_requested)
         self._event(

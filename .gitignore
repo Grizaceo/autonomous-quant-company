@@ -12,6 +12,7 @@ __pycache__/
 htmlcov/
 .venv/
 venv/
+build/
 
 # Node/dashboard
 node_modules/

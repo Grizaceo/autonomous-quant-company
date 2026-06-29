@@ -82,3 +82,17 @@ def test_trade_blocked_skips_execution(tmp_path, monkeypatch):
     result = AutonomousQuantCompanyAgent(cfg).run_daily_cycle()
     assert result.approval_status == "blocked"
     assert result.portfolio_positions == 0
+
+
+def test_live_request_is_blocked_by_default_policy(tmp_path, monkeypatch):
+    monkeypatch.setenv("AQTC_DISABLE_HERMES_ENV", "true")
+    cfg = AQTCConfig(demo_data_dir=DEMO_DATA_DIR, state_dir=tmp_path, live_trading=True)
+
+    result = AutonomousQuantCompanyAgent(cfg).run_daily_cycle()
+
+    assert result.approval_status == "blocked"
+    assert result.portfolio_positions == 0
+    events = AutonomousQuantCompanyAgent(cfg).events.read()
+    approve_trade = [event for event in events if event["action"] == "approve_trade"][-1]
+    assert approve_trade["approval_status"] == "blocked"
+    assert "live_broker_execution" in approve_trade["summary"]
