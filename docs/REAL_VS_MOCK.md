@@ -26,6 +26,11 @@ See `.env.example` for the full list. Important knobs:
 - `AQTC_STATE_DIR` — isolate local state (used in tests and Docker).
 - `AQTC_AUTO_APPROVE_SPEND` / `--approve-spend` — bypass human approval for large spends.
 - `AQTC_OPENCODE_ZEN_BASE_URL` — OpenCode Zen OpenAI-compatible base URL.
+- `AQTC_API_TOKEN` — when set, `POST /cycle/run` requires `Authorization: Bearer <token>`.
+
+## MCP read-only semantics
+
+`aqtc_get_report(run=false)` returns `{exists: false, path, content: null, hint}` when no report exists — it does **not** auto-run a cycle.
 
 ## Revenue honesty
 
