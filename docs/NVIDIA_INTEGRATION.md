@@ -34,5 +34,5 @@ Local verification on this machine showed both OpenRouter and NVIDIA NIM modes r
 
 Nemotron summarizes market/regime context; it does not approve trades. Approval remains in the NemoClaw-compatible policy boundary (local deterministic guardrails in the demo).
 
-See [docs/NEMOCLAW_POLICY_MAP.md](NEMOCLAW_POLICY_MAP.md) for how YAML maps to NemoClaw-style guardrails.
+See [docs/NEMOCLAW_POLICY_MAP.md](NEMOCLAW_POLICY_MAP.md) for how YAML maps to NemoClaw-compatible guardrails.
 

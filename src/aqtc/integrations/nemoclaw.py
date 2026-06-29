@@ -83,7 +83,7 @@ def load_approval_policy(path: Path | str | None) -> ApprovalPolicy:
 
 
 class LocalPolicyApprovalAdapter:
-    """NemoClaw-style local approval layer for safe demo operation."""
+    """NemoClaw-compatible local approval adapter; safe mock by default."""
 
     def __init__(self, policy: ApprovalPolicy | None = None):
         self.policy = policy or ApprovalPolicy()
