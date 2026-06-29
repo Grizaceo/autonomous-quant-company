@@ -20,6 +20,9 @@ def test_business_cycle_end_to_end(tmp_path):
     assert result.rejected_candidate_sharpe == pytest.approx(-0.544, abs=0.01)
     assert result.rejection_reason == "failed recent-regime robustness"
     report = (tmp_path / "customer_report.md").read_text(encoding="utf-8")
+    assert "## Executive summary" in report
     assert "## Research provenance" in report
-    assert "## Rejected candidate" in report
+    assert "## What was rejected" in report
+    assert "## Revenue proof" in report
+    assert "## Not investment advice" in report
     assert "## Business ledger" in report

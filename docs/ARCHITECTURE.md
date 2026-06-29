@@ -23,7 +23,7 @@ Hermes Agent
   ├─ Integrations
   │    ├─ Stripe ledger / future Stripe Skills
   │    ├─ Mock Nemotron / future NVIDIA adapter
-  │    └─ Local NemoClaw-style approval policy
+  │    └─ NemoClaw-compatible policy adapter (local deterministic guardrails in demo)
   │
   └─ API / future MCP tools
 ```
@@ -47,5 +47,5 @@ P0 is deterministic and safe. It proves the operating loop without requiring rea
 
 - `aqtc.integrations.nvidia` supports OpenRouter, NVIDIA NIM, and OpenCode Zen via OpenAI-compatible chat completions.
 - `aqtc.integrations.stripe_skills` supports mock ledger plus Stripe test-mode PaymentIntent creation for revenue.
-- `examples/approval_policy.yaml` makes NemoClaw-style constraints explicit.
+- `examples/approval_policy.yaml` makes NemoClaw-compatible constraints explicit.
 - `aqtc.mcp_server` exposes four FastMCP tools for Hermes.

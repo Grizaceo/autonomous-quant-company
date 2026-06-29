@@ -1,4 +1,4 @@
-.PHONY: install install-all test demo report serve lint format typecheck smoke
+.PHONY: install install-all test demo report serve lint format typecheck smoke judge-smoke reproduce
 
 install:
 	python -m pip install -e ".[dev]"
@@ -41,3 +41,9 @@ typecheck:
 
 smoke:
 	bash scripts/smoke_test.sh
+
+judge-smoke:
+	bash scripts/judge_smoke.sh
+
+reproduce:
+	bash scripts/reproduce_submission.sh

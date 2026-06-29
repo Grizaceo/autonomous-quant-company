@@ -91,28 +91,28 @@ else:
   <p>Paper-trading business cycle dashboard (demo). <em>From evolved alpha to invoice.</em></p>
   <div class="cards">
     <div class="card">
-      <h2>Alpha provenance</h2>
+      <h2>Alpha origin</h2>
       <span class="metric"><strong>Model:</strong> {html.escape(str(prov.get("model", "")))}</span>
       <span class="metric"><strong>Sharpe:</strong> {accepted.get("mean_sharpe", 0):.3f}</span>
       <span class="metric"><strong>Folds:</strong> {accepted.get("n_folds", 0)} ({accepted.get("positive_fold_ratio", 0):.0%} positive)</span>
       <span class="metric"><strong>MaxDD:</strong> {accepted.get("mean_max_drawdown", 0):.3f}</span>
     </div>
     <div class="card">
-      <h2>Rejected strategy</h2>
+      <h2>Bad strategy rejected</h2>
       <span class="metric"><strong>Name:</strong> {html.escape(str(rejected.get("name", "")))}</span>
       <span class="metric"><strong>Sharpe:</strong> {rejected.get("sharpe", 0):.3f}</span>
       <span class="metric"><strong>MaxDD:</strong> {rejected.get("max_drawdown", 0):.3f}</span>
       <span class="metric"><strong>Reason:</strong> {html.escape(str(rejected.get("reason", "")))}</span>
     </div>
     <div class="card">
-      <h2>Policy</h2>
+      <h2>Policy gate</h2>
       <span class="metric"><strong>ID:</strong> {html.escape(str(policy.get("policy_id", "")))}</span>
       <span class="metric"><strong>Daily budget:</strong> ${policy.get("daily_budget_usd", 0):.2f}</span>
       <span class="metric"><strong>Max gross:</strong> {policy.get("max_gross_exposure", 0)}</span>
       <span class="metric"><strong>Live trading:</strong> {policy.get("live_trading", False)}</span>
     </div>
     <div class="card">
-      <h2>Business</h2>
+      <h2>Invoice / revenue</h2>
       <span class="metric"><strong>Spend:</strong> ${spend:.2f}</span>
       <span class="metric"><strong>Earn:</strong> ${earn:.2f}</span>
       <span class="metric"><strong>Net:</strong> ${net:.2f}</span>

@@ -62,8 +62,8 @@ def test_dashboard(client):
     assert "HGAT+ES" in text
     assert "Sharpe" in text
     assert "3.255" in text
-    assert "Rejected strategy" in text
+    assert "Bad strategy rejected" in text
     assert "-0.544" in text
     assert "Net" in text
     assert "$17.00" in text
-    assert "Alpha provenance" in text
+    assert "Alpha origin" in text

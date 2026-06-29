@@ -1,0 +1,1 @@
+Most AI trading demos are exactly three things: a prompt, a signal, and a chart. They hide bad backtests, they skip business operations, and they cannot explain where the alpha came from.
