@@ -13,7 +13,7 @@
 **Evidence:** HGAT+ES v4 frozen Financial Lab walkforward in `data/demo/walkforward_report.json` — mean Sharpe **3.255**, mean max drawdown **0.032**, **5/5** folds positive (`data/demo/manifest.json`). Inspect: `aqtc provenance --json`.
 
 **Claim 3: Runs as a business.**  
-**Evidence:** Spend **** (data), earn **** (report), net **\**. Stripe test PaymentIntent **succeeded** — redacted proof at `docs/proof/stripe_test_paymentintent_redacted.json` (`pi_3TncGX4qsu8xWISK0x5Rc0IY`).
+**Evidence:** Spend **$2** (data), earn **$19** (report), net **$17**. Stripe test PaymentIntent **succeeded** — redacted proof at `docs/proof/stripe_test_paymentintent_redacted.json` (`pi_3TncGX4qsu8xWISK0x5Rc0IY`).
 
 **Claim 4: Agent decisions visible.**  
 **Evidence:** `aqtc demo` prints DECISIONS block — strategy accept/reject, spend gate, trade gate, Stripe earn status. `scripts/judge_demo_60s.sh` for ~60s video.
