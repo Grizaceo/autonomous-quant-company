@@ -36,6 +36,8 @@ aqtc provenance          # human-readable provenance summary
 aqtc provenance --json   # machine-readable
 ```
 
+**Read the engine, not just the number.** The HGAT+ES architecture, ES trainer, and walkforward validator that produced this evidence are published as a curated, MIT-licensed reference: **[github.com/Grizaceo/financial-lab-reference](https://github.com/Grizaceo/financial-lab-reference)**. Its `production.toml` and `walkforward_report.json` are byte-identical (SHA-256) to the copies here — provenance you can open and read, not just trust.
+
 ## Business loop
 
 The agent runs a safe paper-trading business cycle:
