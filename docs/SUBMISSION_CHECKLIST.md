@@ -27,8 +27,8 @@
 - [x] Judge smoke script at `scripts/judge_smoke.sh`.
 - [x] demo video `docs/demo-video/aqtc_demo.mp4`
 - [x] Stripe proof `docs/proof/stripe_test_paymentintent_redacted.json`
-- [ ] Tweet tags `@NousResearch` (post externally; copy in `docs/SUBMISSION_WRITEUP.md`).
-- [ ] Discord submission link posted (use blurb in `docs/SUBMISSION_WRITEUP.md`).
-- [ ] Typeform submitted (external).
+- [ ] Tweet tags `@NousResearch` (post externally; copy in `docs/SUBMISSION_WRITEUP.md` or `bash scripts/print_external_submission.sh`).
+- [ ] Discord submission link posted (use blurb in `docs/SUBMISSION_WRITEUP.md` or `scripts/print_external_submission.sh`).
+- [ ] Typeform submitted (external; video at `docs/demo-video/aqtc_demo.mp4`).
 
-**Note:** Tweet, Discord, and Typeform must be completed outside the repo.
+**Note:** Tweet, Discord, and Typeform must be completed outside the repo. See [docs/EXTERNAL_SUBMISSION.md](EXTERNAL_SUBMISSION.md) for the step-by-step checklist.

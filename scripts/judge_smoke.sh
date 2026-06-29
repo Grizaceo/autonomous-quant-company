@@ -7,8 +7,14 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 export PYTHONPATH="${REPO_ROOT}/src${PYTHONPATH:+:$PYTHONPATH}"
 
+if command -v python >/dev/null 2>&1; then
+  PYTHON_BIN=python
+else
+  PYTHON_BIN=python3
+fi
+
 run_aqtc() {
-  python -m aqtc.cli "$@"
+  "$PYTHON_BIN" -m aqtc.cli "$@"
 }
 
 DEMO_JSON="$(mktemp)"
@@ -18,7 +24,7 @@ trap 'rm -f "$DEMO_JSON" "$PROV_JSON"' EXIT
 run_aqtc demo --json >"$DEMO_JSON"
 run_aqtc provenance --json >"$PROV_JSON"
 
-python - <<PY
+"$PYTHON_BIN" - <<PY
 import json
 from pathlib import Path
 
