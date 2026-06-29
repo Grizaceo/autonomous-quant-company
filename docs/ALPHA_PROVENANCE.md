@@ -57,3 +57,5 @@ fastmcp call src/aqtc/mcp_server.py aqtc_get_provenance --json
 > ES is verifiable alpha origin/provenance, not runtime spectacle.
 
 The demo validates pre-computed walkforward evidence, compares against a known-bad ensemble, and operates a paper portfolio — without re-training HGAT+ES on every `aqtc demo` invocation.
+
+For *why* this architecture (heterogeneous graph, attention, and Evolution Strategies over backprop/PPO), see [WHY_HGAT_ES.md](WHY_HGAT_ES.md).

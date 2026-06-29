@@ -143,7 +143,7 @@ class HarnessGenotype:
     # Controller (HGAT) hyperparams
     controller: Dict[str, Any] = field(
         default_factory=lambda: {
-            "d_model": 64,
+            "d_model": 64,  # genotype seed; production run uses d_model=128 (data/demo/production.toml)
             "n_layers": 3,
             "dropout": 0.2,
             "attention_heads": 4,
