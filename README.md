@@ -18,6 +18,8 @@ A Hermes-powered autonomous quantitative research company for the NVIDIA × Stri
 
 **Key principle:** ES is verifiable alpha origin/provenance — not heavy live training in the demo.
 
+**Why a heterogeneous graph + Evolution Strategies** (not prompt trading, not backprop/PPO)? See **[docs/WHY_HGAT_ES.md](docs/WHY_HGAT_ES.md)** — typed `stock`/`commodity`/`macro`/`risk` nodes, the non-differentiable cost-aware reward that rules out gradients, the 19D genotype, and the byte-identical SHA-256 provenance anchor.
+
 **vs SOLVENT:** SOLVENT sells research briefs; AQTC sells evolved alpha proven with 5-fold walkforward.
 
 ## Verified Financial Lab evidence

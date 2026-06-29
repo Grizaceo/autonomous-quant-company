@@ -35,7 +35,7 @@ Most AI trading demos are prompt → signal → chart. They hide bad backtests, 
 
 AQTC is an autonomous quant company that:
 
-1. **Proves alpha origin** — frozen Financial Lab HGAT+ES v4 walkforward evidence (Sharpe 3.255, 5 folds, 100% positive)
+1. **Proves alpha origin** — frozen Financial Lab HGAT+ES v4 walkforward evidence (Sharpe 3.255, 5 folds, 100% positive); [why this architecture](WHY_HGAT_ES.md)
 2. **Falsifies bad strategies** — explicitly rejects 2019+ ensemble (Sharpe -0.544, MaxDD 0.486)
 3. **Runs operations** — Stripe spend/earn, NemoClaw-compatible policy boundary, paper MockBroker, customer reports
 4. **Integrates with Hermes** — CLI, MCP tools, FastAPI dashboard

@@ -2,6 +2,8 @@
 
 Autonomous Quant Company separates the financial model from the business operator.
 
+> Design rationale for the financial model — why a heterogeneous graph + Evolution Strategies, and what the 19D genotype encodes — is in **[WHY_HGAT_ES.md](WHY_HGAT_ES.md)**.
+
 ```text
 Hermes Agent
   │
