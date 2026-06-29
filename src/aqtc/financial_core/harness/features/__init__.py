@@ -1,6 +1,7 @@
 """
 Feature Tools — Technical indicators and transformations.
 """
+
 from __future__ import annotations
 
 from typing import Dict
@@ -75,11 +76,13 @@ class MACDTool(BaseFeatureTool):
 
             # Normalize by price
             price = close[-1]
-            features.append([
-                macd[-1] / price if price != 0 else 0.0,
-                macd_signal[-1] / price if price != 0 else 0.0,
-                histogram[-1] / price if price != 0 else 0.0,
-            ])
+            features.append(
+                [
+                    macd[-1] / price if price != 0 else 0.0,
+                    macd_signal[-1] / price if price != 0 else 0.0,
+                    histogram[-1] / price if price != 0 else 0.0,
+                ]
+            )
 
         return np.array(features) if features else np.array([])
 
@@ -110,7 +113,7 @@ class ZScoreTool(BaseFeatureTool):
         returns_matrix = np.zeros((n, max_len))
         for i, ticker in enumerate(tickers):
             r = all_returns[ticker]
-            returns_matrix[i, -len(r):] = r
+            returns_matrix[i, -len(r) :] = r
 
         # Cross-sectional z-score (per time step)
         cs_mean = returns_matrix.mean(axis=0)
@@ -173,13 +176,13 @@ class WaveletTool(BaseFeatureTool):
 
         features = []
         for ticker, df in data.get("stock", {}).items():
-            if "close" not in df.columns or len(df) < 2 ** level:
+            if "close" not in df.columns or len(df) < 2**level:
                 features.append([0.0] * (level * 2))
                 continue
 
             close = df["close"].values
             # Wavelet decomposition
-            coeffs = pywt.wavedec(close, 'db4', level=level)
+            coeffs = pywt.wavedec(close, "db4", level=level)
 
             # Extract statistics from each level
             feat = []

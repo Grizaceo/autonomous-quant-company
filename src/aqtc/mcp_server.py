@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from aqtc.config import AQTCConfig
 from aqtc.operations.business_cycle import AutonomousQuantCompanyAgent
 
 try:
@@ -10,9 +11,22 @@ try:
 except Exception:  # pragma: no cover - import guard for minimal installs
     FastMCP = None
 
+_agent_instance: AutonomousQuantCompanyAgent | None = None
 
-def _agent() -> AutonomousQuantCompanyAgent:
-    return AutonomousQuantCompanyAgent()
+
+def _agent(config: AQTCConfig | None = None) -> AutonomousQuantCompanyAgent:
+    global _agent_instance
+    if config is not None:
+        return AutonomousQuantCompanyAgent(config)
+    if _agent_instance is None:
+        _agent_instance = AutonomousQuantCompanyAgent()
+    return _agent_instance
+
+
+def reset_agent() -> None:
+    """Reset the shared MCP agent (used in tests)."""
+    global _agent_instance
+    _agent_instance = None
 
 
 def aqtc_status() -> dict[str, Any]:
@@ -25,12 +39,13 @@ def aqtc_run_cycle(reset: bool = True) -> dict[str, Any]:
     return _agent().run_daily_cycle(reset=reset).to_dict()
 
 
-def aqtc_get_report() -> dict[str, Any]:
-    """Return the generated customer report, creating it via a cycle if missing."""
+def aqtc_get_report(run: bool = False) -> dict[str, Any]:
+    """Return the customer report. Set run=true to execute a fresh cycle first."""
     agent = _agent()
     report = Path(agent.config.state_dir / "customer_report.md")
-    if not report.exists():
-        agent.run_daily_cycle(reset=True)
+    if run or not report.exists():
+        agent.run_daily_cycle(reset=run or not report.exists())
+        report = Path(agent.config.state_dir / "customer_report.md")
     return {"path": str(report), "content": report.read_text(encoding="utf-8")}
 
 
@@ -52,7 +67,9 @@ else:  # pragma: no cover
 
 def main() -> int:
     if mcp is None:
-        raise RuntimeError("fastmcp is required for the AQTC MCP server. Install with `pip install fastmcp`.")
+        raise RuntimeError(
+            "fastmcp is required for the AQTC MCP server. Install with `pip install fastmcp`."
+        )
     mcp.run()
     return 0
 

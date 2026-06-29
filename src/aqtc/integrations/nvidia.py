@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 from aqtc.secrets import get_secret
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -39,11 +42,20 @@ class OpenAICompatibleNemotronAdapter:
     - opencode_zen: configurable OpenAI-compatible endpoint with OPENCODE_ZEN_API_KEY
     """
 
-    def __init__(self, *, provider: str, model: str, base_url: str, api_key_name: str):
+    def __init__(
+        self,
+        *,
+        provider: str,
+        model: str,
+        base_url: str,
+        api_key_name: str,
+        explicit_mode: bool = False,
+    ):
         self.provider = provider
         self.model = model
         self.base_url = base_url.rstrip("/")
         self.api_key_name = api_key_name
+        self.explicit_mode = explicit_mode
         self.api_key = get_secret(api_key_name)
 
     @property
@@ -52,6 +64,22 @@ class OpenAICompatibleNemotronAdapter:
 
     def summarize_market_regime(self, context: dict[str, Any] | None = None) -> MarketRegimeSummary:
         if not self.available:
+            if self.explicit_mode:
+                logger.warning(
+                    "%s requested but %s is not set; returning unavailable summary",
+                    self.provider,
+                    self.api_key_name,
+                )
+                fallback = MockNemotronAdapter().summarize_market_regime(context)
+                return MarketRegimeSummary(
+                    provider=f"{self.provider}-unavailable",
+                    model=self.model,
+                    live=False,
+                    text=(
+                        f"{fallback.text} Live provider unavailable: "
+                        f"{self.api_key_name} not configured."
+                    ),
+                )
             return MockNemotronAdapter().summarize_market_regime(context)
         try:
             from openai import OpenAI
@@ -77,6 +105,7 @@ class OpenAICompatibleNemotronAdapter:
                 temperature=0.2,
             )
         except Exception as exc:
+            logger.warning("Live Nemotron provider %s failed: %s", self.provider, exc)
             fallback = MockNemotronAdapter().summarize_market_regime(context)
             return MarketRegimeSummary(
                 provider=f"{self.provider}-unavailable",
@@ -85,7 +114,9 @@ class OpenAICompatibleNemotronAdapter:
                 text=f"{fallback.text} Live provider error: {type(exc).__name__}.",
             )
         text = completion.choices[0].message.content or "No summary returned."
-        return MarketRegimeSummary(provider=self.provider, model=self.model, text=text.strip(), live=True)
+        return MarketRegimeSummary(
+            provider=self.provider, model=self.model, text=text.strip(), live=True
+        )
 
 
 def make_nemotron_adapter(
@@ -94,8 +125,10 @@ def make_nemotron_adapter(
     openrouter_model: str,
     nvidia_model: str,
     opencode_zen_model: str,
+    opencode_zen_base_url: str = "https://openrouter.ai/api/v1",
 ) -> MockNemotronAdapter | OpenAICompatibleNemotronAdapter:
     normalized = mode.lower()
+    explicit = normalized not in {"auto", "mock"}
     if normalized == "auto":
         if get_secret("OPENROUTER_API_KEY"):
             normalized = "openrouter"
@@ -105,6 +138,7 @@ def make_nemotron_adapter(
             normalized = "opencode_zen"
         else:
             normalized = "mock"
+        explicit = False
 
     if normalized == "openrouter":
         return OpenAICompatibleNemotronAdapter(
@@ -112,6 +146,7 @@ def make_nemotron_adapter(
             model=openrouter_model,
             base_url="https://openrouter.ai/api/v1",
             api_key_name="OPENROUTER_API_KEY",
+            explicit_mode=explicit,
         )
     if normalized == "nvidia":
         return OpenAICompatibleNemotronAdapter(
@@ -119,12 +154,14 @@ def make_nemotron_adapter(
             model=nvidia_model,
             base_url="https://integrate.api.nvidia.com/v1",
             api_key_name="NVIDIA_API_KEY",
+            explicit_mode=explicit,
         )
     if normalized in {"opencode", "opencode_zen", "zen"}:
         return OpenAICompatibleNemotronAdapter(
             provider="opencode-zen",
             model=opencode_zen_model,
-            base_url="https://openrouter.ai/api/v1",
+            base_url=opencode_zen_base_url,
             api_key_name="OPENCODE_ZEN_API_KEY",
+            explicit_mode=explicit,
         )
     return MockNemotronAdapter()

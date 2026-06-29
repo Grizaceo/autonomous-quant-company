@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from pathlib import Path
-from typing import Any, Literal, Protocol
 import base64
 import json
 import urllib.error
 import urllib.parse
 import urllib.request
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any, Literal, Protocol
 
 from aqtc.secrets import get_secret
 
@@ -122,7 +122,7 @@ class StripeTestModeAdapter(MockStripeAdapter):
         if not self.api_key:
             raise RuntimeError("STRIPE_SECRET_KEY is not available")
         encoded = urllib.parse.urlencode(data).encode("utf-8")
-        token = base64.b64encode(f"{self.api_key}:".encode("utf-8")).decode("ascii")
+        token = base64.b64encode(f"{self.api_key}:".encode()).decode("ascii")
         request = urllib.request.Request(
             self.api_base + path,
             data=encoded,
@@ -151,20 +151,23 @@ class StripeTestModeAdapter(MockStripeAdapter):
                 "description": description,
                 "metadata[agent]": "autonomous-quant-company",
                 "metadata[mode]": "hackathon-demo",
-                "automatic_payment_methods[enabled]": "true",
+                "payment_method": "pm_card_visa",
+                "confirm": "true",
             },
         )
+        status = str(payment_intent.get("status", "created"))
         event = StripeLedgerEvent(
             kind="earn",
             description=description,
             amount_usd=amount_usd,
             mode=self.mode,
             external_id=payment_intent.get("id"),
-            status=str(payment_intent.get("status", "created")),
+            status=status,
             metadata={
                 "object": payment_intent.get("object"),
                 "livemode": payment_intent.get("livemode"),
                 "currency": payment_intent.get("currency"),
+                "collection": "succeeded" if status == "succeeded" else "authorized_not_collected",
             },
         )
         self.ledger.append(event)

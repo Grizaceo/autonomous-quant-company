@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-import json
 
 
 @dataclass(frozen=True)
@@ -63,7 +63,9 @@ def passes_gate4(
     )
 
 
-def compare_candidate_vs_rejected(candidate: dict[str, Any], rejected: dict[str, Any]) -> dict[str, float]:
+def compare_candidate_vs_rejected(
+    candidate: dict[str, Any], rejected: dict[str, Any]
+) -> dict[str, float]:
     c = summarize_walkforward(candidate)
     r = summarize_walkforward(rejected)
     return {

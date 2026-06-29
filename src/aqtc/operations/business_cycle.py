@@ -28,6 +28,7 @@ class BusinessCycleResult:
     nemotron_provider: str
     nemotron_live: bool
     stripe_mode: str
+    spend_status: str = "completed"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -51,12 +52,15 @@ class AutonomousQuantCompanyAgent:
             openrouter_model=self.config.openrouter_model,
             nvidia_model=self.config.nvidia_model,
             opencode_zen_model=self.config.opencode_zen_model,
+            opencode_zen_base_url=self.config.opencode_zen_base_url,
         )
         self.approvals = LocalPolicyApprovalAdapter(self.policy)
         self.broker = MockBroker(self.config.state_dir / "portfolio_state.json")
 
     def _event(self, action: str, summary: str, **kwargs: Any) -> None:
-        self.events.append(BusinessEvent(actor="aqtc-agent", action=action, summary=summary, **kwargs))
+        self.events.append(
+            BusinessEvent(actor="aqtc-agent", action=action, summary=summary, **kwargs)
+        )
 
     def reset_demo_state(self) -> None:
         """Reset local demo state so every `aqtc demo` is deterministic."""
@@ -66,9 +70,17 @@ class AutonomousQuantCompanyAgent:
         if portfolio_path.exists():
             portfolio_path.unlink()
 
-    def run_daily_cycle(self, *, reset: bool = True) -> BusinessCycleResult:
+    def run_daily_cycle(
+        self,
+        *,
+        reset: bool = True,
+        auto_approve_spend: bool | None = None,
+    ) -> BusinessCycleResult:
         if reset:
             self.reset_demo_state()
+        approve_spend = (
+            self.config.auto_approve_spend if auto_approve_spend is None else auto_approve_spend
+        )
         data = self.config.demo_data_dir
 
         production = load_json(data / "walkforward_report.json")
@@ -88,27 +100,50 @@ class AutonomousQuantCompanyAgent:
             evidence={"provider": regime.provider, "model": regime.model, "live": regime.live},
         )
 
-        spend_approval = self.approvals.review_spend(amount_usd=self.config.data_purchase_usd)
+        spend_status = "completed"
+        spend_approval = self.approvals.review_spend(
+            amount_usd=self.config.data_purchase_usd,
+            auto_approve=approve_spend,
+        )
         self._event(
             "approve_spend",
             spend_approval.reason,
             approval_status=spend_approval.status,
             evidence=spend_approval.checks,
         )
-        if not spend_approval.approved:
-            raise RuntimeError(f"spend was not approved: {spend_approval.reason}")
-        spend = self.stripe.spend("premium market data sample", self.config.data_purchase_usd)
-        self._event(
-            "spend",
-            spend.description,
-            amount_usd=spend.amount_usd,
-            evidence={"mode": spend.mode, "external_id": spend.external_id, "status": spend.status},
-        )
+        if spend_approval.approved:
+            spend = self.stripe.spend("premium market data sample", self.config.data_purchase_usd)
+            self._event(
+                "spend",
+                spend.description,
+                amount_usd=spend.amount_usd,
+                evidence={
+                    "mode": spend.mode,
+                    "external_id": spend.external_id,
+                    "status": spend.status,
+                },
+            )
+        elif spend_approval.status == "requires_human_approval":
+            spend_status = "skipped_pending_approval"
+            self._event(
+                "skip_spend",
+                spend_approval.reason,
+                approval_status=spend_approval.status,
+            )
+        else:
+            spend_status = "blocked"
+            self._event(
+                "skip_spend",
+                spend_approval.reason,
+                approval_status=spend_approval.status,
+            )
 
         decision = passes_gate4(production)
         bad_decision = passes_gate4(rejected)
         self._event("validate_strategy", decision.reason, evidence={"comparison": comparison})
-        self._event("reject_strategy", bad_decision.reason, evidence={"source": "2019+ ensemble holdout"})
+        self._event(
+            "reject_strategy", bad_decision.reason, evidence={"source": "2019+ ensemble holdout"}
+        )
 
         raw_signal = load_latest_signal(data / "live_signals.jsonl")
         risk_policy = RiskPolicy(
@@ -118,8 +153,9 @@ class AutonomousQuantCompanyAgent:
             live_trading=self.config.live_trading and self.policy.live_trading,
         )
         capped_signal = cap_signal(raw_signal, max_gross=risk_policy.max_gross_exposure)
-        assessment = RiskGuard(risk_policy).assess(capped_signal, live_requested=False)
-        approval = self.approvals.review_trade(assessment)
+        live_requested = self.config.live_trading and self.policy.live_trading
+        assessment = RiskGuard(risk_policy).assess(capped_signal, live_requested=live_requested)
+        approval = self.approvals.review_trade(assessment, live_requested=live_requested)
         self._event(
             "approve_trade",
             approval.reason,
@@ -129,7 +165,11 @@ class AutonomousQuantCompanyAgent:
 
         if approval.approved and decision.accepted:
             portfolio = self.broker.rebalance(capped_signal)
-            self._event("execute_paper_rebalance", "MockBroker portfolio updated", evidence=portfolio.to_dict())
+            self._event(
+                "execute_paper_rebalance",
+                "MockBroker portfolio updated",
+                evidence=portfolio.to_dict(),
+            )
         else:
             portfolio = self.broker.load()
             self._event("skip_execution", "trade not executed", approval_status=approval.status)
@@ -142,7 +182,13 @@ class AutonomousQuantCompanyAgent:
             evidence={"mode": earn.mode, "external_id": earn.external_id, "status": earn.status},
         )
 
-        report_path = self.generate_report(decision=decision, comparison=comparison, approval=approval, portfolio=portfolio)
+        report_path = self.generate_report(
+            decision=decision,
+            comparison=comparison,
+            approval=approval,
+            portfolio=portfolio,
+            spend_status=spend_status,
+        )
         self._event("generate_report", f"report written to {report_path}")
 
         return BusinessCycleResult(
@@ -157,9 +203,18 @@ class AutonomousQuantCompanyAgent:
             nemotron_provider=regime.provider,
             nemotron_live=regime.live,
             stripe_mode=self.stripe.mode,
+            spend_status=spend_status,
         )
 
-    def generate_report(self, *, decision: Any, comparison: dict[str, float], approval: Any, portfolio: Any) -> Path:
+    def generate_report(
+        self,
+        *,
+        decision: Any,
+        comparison: dict[str, float],
+        approval: Any,
+        portfolio: Any,
+        spend_status: str = "completed",
+    ) -> Path:
         path = self.config.state_dir / "customer_report.md"
         content = f"""# Autonomous Quant Company Report
 
@@ -167,14 +222,18 @@ class AutonomousQuantCompanyAgent:
 
 - Accepted production strategy: {decision.accepted}
 - Reason: {decision.reason}
-- Sharpe delta vs rejected ensemble: {comparison['sharpe_delta']:.3f}
-- Drawdown improvement vs rejected ensemble: {comparison['drawdown_delta']:.3f}
+- Sharpe delta vs rejected ensemble: {comparison["sharpe_delta"]:.3f}
+- Drawdown improvement vs rejected ensemble: {comparison["drawdown_delta"]:.3f}
 
 ## Approval
 
 - Status: {approval.status}
 - Reason: {approval.reason}
 - Policy: {approval.policy_id}
+
+## Procurement
+
+- Spend status: {spend_status}
 
 ## Paper portfolio
 
@@ -190,7 +249,16 @@ class AutonomousQuantCompanyAgent:
         path.write_text(content, encoding="utf-8")
         return path
 
+    def read_report(self) -> Path:
+        path = self.config.state_dir / "customer_report.md"
+        if not path.exists():
+            raise FileNotFoundError(
+                f"No report at {path}. Run `aqtc demo` or `aqtc report --run` first."
+            )
+        return path
+
     def status(self) -> dict[str, Any]:
+        report_path = self.config.state_dir / "customer_report.md"
         return {
             "events": self.events.read(),
             "ledger": self.ledger.read(),
@@ -200,5 +268,7 @@ class AutonomousQuantCompanyAgent:
                 "stripe_mode": self.config.stripe_mode,
                 "nvidia_mode": self.config.nvidia_mode,
                 "live_trading": self.config.live_trading,
+                "auto_approve_spend": self.config.auto_approve_spend,
             },
+            "report_path": str(report_path) if report_path.exists() else None,
         }

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-import json
 
 from .signals import TradingSignal
 
@@ -29,7 +29,9 @@ class MockBroker:
         return PortfolioState(**raw)
 
     def save(self, state: PortfolioState) -> None:
-        self.state_path.write_text(json.dumps(state.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+        self.state_path.write_text(
+            json.dumps(state.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+        )
 
     def rebalance(self, signal: TradingSignal) -> PortfolioState:
         state = self.load()

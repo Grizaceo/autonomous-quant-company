@@ -37,7 +37,11 @@ class RiskGuard:
             reasons.append(
                 f"active positions {len(signal.positions)} > limit {self.policy.max_active_positions}"
             )
-        too_large = [p.ticker for p in signal.positions if abs(p.weight) > self.policy.max_single_position_weight]
+        too_large = [
+            p.ticker
+            for p in signal.positions
+            if abs(p.weight) > self.policy.max_single_position_weight
+        ]
         if too_large:
             reasons.append("single-position limit exceeded: " + ", ".join(too_large))
         return RiskAssessment(

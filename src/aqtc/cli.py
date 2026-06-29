@@ -16,30 +16,62 @@ def build_parser() -> argparse.ArgumentParser:
 
     demo = sub.add_parser("demo", help="run deterministic business cycle")
     demo.add_argument("--json", action="store_true", help="emit JSON only")
-    demo.add_argument("--stripe-mode", choices=["mock", "stripe_test", "test", "stripe"], default=None)
-    demo.add_argument("--nvidia-mode", choices=["mock", "auto", "openrouter", "nvidia", "opencode_zen"], default=None)
+    demo.add_argument(
+        "--stripe-mode", choices=["mock", "stripe_test", "test", "stripe"], default=None
+    )
+    demo.add_argument(
+        "--nvidia-mode",
+        choices=["mock", "auto", "openrouter", "nvidia", "opencode_zen"],
+        default=None,
+    )
     demo.add_argument("--policy", type=Path, default=None)
+    demo.add_argument(
+        "--approve-spend",
+        action="store_true",
+        help="auto-approve spend above the human approval threshold",
+    )
 
     sub.add_parser("status", help="print current local state")
 
-    report = sub.add_parser("report", help="write current customer report to a path")
+    report = sub.add_parser("report", help="copy customer report to a path")
     report.add_argument("--out", required=True)
+    report.add_argument(
+        "--run",
+        action="store_true",
+        help="run a fresh business cycle before copying the report",
+    )
+    report.add_argument(
+        "--stripe-mode", choices=["mock", "stripe_test", "test", "stripe"], default=None
+    )
+    report.add_argument(
+        "--nvidia-mode",
+        choices=["mock", "auto", "openrouter", "nvidia", "opencode_zen"],
+        default=None,
+    )
+    report.add_argument("--policy", type=Path, default=None)
+    report.add_argument("--approve-spend", action="store_true")
 
     regime = sub.add_parser("regime", help="run only the Nemotron/NVIDIA regime summarizer")
-    regime.add_argument("--provider", choices=["mock", "auto", "openrouter", "nvidia", "opencode_zen"], default="auto")
+    regime.add_argument(
+        "--provider",
+        choices=["mock", "auto", "openrouter", "nvidia", "opencode_zen"],
+        default="auto",
+    )
     regime.add_argument("--json", action="store_true")
     return parser
 
 
 def _config_from_args(args: argparse.Namespace) -> AQTCConfig:
     cfg = AQTCConfig()
-    updates = {}
+    updates: dict[str, object] = {}
     if getattr(args, "stripe_mode", None):
         updates["stripe_mode"] = args.stripe_mode
     if getattr(args, "nvidia_mode", None):
         updates["nvidia_mode"] = args.nvidia_mode
     if getattr(args, "policy", None):
         updates["approval_policy_path"] = args.policy
+    if getattr(args, "approve_spend", False):
+        updates["auto_approve_spend"] = True
     return replace(cfg, **updates) if updates else cfg
 
 
@@ -53,9 +85,15 @@ def main(argv: list[str] | None = None) -> int:
             openrouter_model=cfg.openrouter_model,
             nvidia_model=cfg.nvidia_model,
             opencode_zen_model=cfg.opencode_zen_model,
+            opencode_zen_base_url=cfg.opencode_zen_base_url,
         )
         summary = adapter.summarize_market_regime({"task": "live smoke test", "paper_mode": True})
-        data = {"provider": summary.provider, "model": summary.model, "live": summary.live, "text": summary.text}
+        data = {
+            "provider": summary.provider,
+            "model": summary.model,
+            "live": summary.live,
+            "text": summary.text,
+        }
         if args.json:
             print(json.dumps(data, indent=2, sort_keys=True))
         else:
@@ -89,8 +127,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "report":
-        result = agent.run_daily_cycle()
-        src = Path(result.report_path)
+        if args.run:
+            agent.run_daily_cycle()
+        src = agent.read_report()
         dst = Path(args.out)
         dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
         print(str(dst))

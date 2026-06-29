@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -33,25 +34,52 @@ class ApprovalDecision:
 
 def load_approval_policy(path: Path | str | None) -> ApprovalPolicy:
     if not path:
-        return ApprovalPolicy()
-    p = Path(path)
-    if not p.exists():
-        return ApprovalPolicy()
-    raw = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-    risk = raw.get("risk", {})
-    budget = raw.get("budget", {})
-    actions = raw.get("actions", {})
-    return ApprovalPolicy(
-        policy_id=str(raw.get("policy_id", "aqtc-demo-policy-v1")),
-        max_gross_exposure=float(risk.get("max_gross_exposure", 4.0)),
-        max_active_positions=int(risk.get("max_active_positions", 8)),
-        max_single_position_weight=float(risk.get("max_single_position_weight", 2.0)),
-        live_trading=bool(risk.get("live_trading", False)),
-        daily_budget_usd=float(budget.get("daily_budget_usd", 25.0)),
-        require_approval_above_usd=float(budget.get("require_approval_above_usd", 5.0)),
-        deny_actions=list(actions.get("deny", ["live_broker_execution"])),
-        require_approval_actions=list(actions.get("require_approval", ["spend_above_threshold"])),
-    )
+        policy = ApprovalPolicy()
+    else:
+        p = Path(path)
+        if not p.exists():
+            policy = ApprovalPolicy()
+        else:
+            raw = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+            risk = raw.get("risk", {})
+            budget = raw.get("budget", {})
+            actions = raw.get("actions", {})
+            policy = ApprovalPolicy(
+                policy_id=str(raw.get("policy_id", "aqtc-demo-policy-v1")),
+                max_gross_exposure=float(risk.get("max_gross_exposure", 4.0)),
+                max_active_positions=int(risk.get("max_active_positions", 8)),
+                max_single_position_weight=float(risk.get("max_single_position_weight", 2.0)),
+                live_trading=bool(risk.get("live_trading", False)),
+                daily_budget_usd=float(budget.get("daily_budget_usd", 25.0)),
+                require_approval_above_usd=float(budget.get("require_approval_above_usd", 5.0)),
+                deny_actions=list(actions.get("deny", ["live_broker_execution"])),
+                require_approval_actions=list(
+                    actions.get("require_approval", ["spend_above_threshold"])
+                ),
+            )
+
+    overrides: dict[str, float] = {}
+    if os.getenv("AQTC_DAILY_BUDGET_USD") is not None:
+        overrides["daily_budget_usd"] = float(os.environ["AQTC_DAILY_BUDGET_USD"])
+    if os.getenv("AQTC_REQUIRE_APPROVAL_ABOVE_USD") is not None:
+        overrides["require_approval_above_usd"] = float(
+            os.environ["AQTC_REQUIRE_APPROVAL_ABOVE_USD"]
+        )
+    if overrides:
+        policy = ApprovalPolicy(
+            policy_id=policy.policy_id,
+            max_gross_exposure=policy.max_gross_exposure,
+            max_active_positions=policy.max_active_positions,
+            max_single_position_weight=policy.max_single_position_weight,
+            live_trading=policy.live_trading,
+            daily_budget_usd=overrides.get("daily_budget_usd", policy.daily_budget_usd),
+            require_approval_above_usd=overrides.get(
+                "require_approval_above_usd", policy.require_approval_above_usd
+            ),
+            deny_actions=policy.deny_actions,
+            require_approval_actions=policy.require_approval_actions,
+        )
+    return policy
 
 
 class LocalPolicyApprovalAdapter:
@@ -60,29 +88,50 @@ class LocalPolicyApprovalAdapter:
     def __init__(self, policy: ApprovalPolicy | None = None):
         self.policy = policy or ApprovalPolicy()
 
-    def review_trade(self, assessment: RiskAssessment) -> ApprovalDecision:
+    def review_trade(
+        self,
+        assessment: RiskAssessment,
+        *,
+        live_requested: bool = False,
+    ) -> ApprovalDecision:
         checks = {
             "gross_exposure": assessment.gross_exposure,
             "active_positions": assessment.active_positions,
             "risk_allowed": assessment.allowed,
+            "live_requested": live_requested,
+            "deny_actions": self.policy.deny_actions,
         }
-        if assessment.allowed:
+        if live_requested and "live_broker_execution" in self.policy.deny_actions:
             return ApprovalDecision(
-                True,
-                "approved",
-                "paper rebalance within local risk policy",
+                False,
+                "blocked",
+                "live_broker_execution denied by approval policy",
                 policy_id=self.policy.policy_id,
                 checks=checks,
             )
+        if not assessment.allowed:
+            return ApprovalDecision(
+                False,
+                "blocked",
+                "; ".join(assessment.reasons),
+                policy_id=self.policy.policy_id,
+                checks=checks | {"reasons": assessment.reasons},
+            )
         return ApprovalDecision(
-            False,
-            "blocked",
-            "; ".join(assessment.reasons),
+            True,
+            "approved",
+            "paper rebalance within local risk policy",
             policy_id=self.policy.policy_id,
-            checks=checks | {"reasons": assessment.reasons},
+            checks=checks,
         )
 
-    def review_spend(self, *, amount_usd: float, spent_so_far_usd: float = 0.0) -> ApprovalDecision:
+    def review_spend(
+        self,
+        *,
+        amount_usd: float,
+        spent_so_far_usd: float = 0.0,
+        auto_approve: bool = False,
+    ) -> ApprovalDecision:
         projected = spent_so_far_usd + amount_usd
         checks = {
             "amount_usd": amount_usd,
@@ -90,6 +139,7 @@ class LocalPolicyApprovalAdapter:
             "projected_spend_usd": projected,
             "daily_budget_usd": self.policy.daily_budget_usd,
             "require_approval_above_usd": self.policy.require_approval_above_usd,
+            "require_approval_actions": self.policy.require_approval_actions,
         }
         if projected > self.policy.daily_budget_usd:
             return ApprovalDecision(
@@ -99,7 +149,11 @@ class LocalPolicyApprovalAdapter:
                 policy_id=self.policy.policy_id,
                 checks=checks,
             )
-        if amount_usd > self.policy.require_approval_above_usd:
+        needs_approval = (
+            "spend_above_threshold" in self.policy.require_approval_actions
+            and amount_usd > self.policy.require_approval_above_usd
+        )
+        if needs_approval and not auto_approve:
             return ApprovalDecision(
                 False,
                 "requires_human_approval",

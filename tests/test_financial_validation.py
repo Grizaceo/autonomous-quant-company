@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from aqtc.financial_core.validation import load_json, passes_gate4, compare_candidate_vs_rejected
+from aqtc.financial_core.validation import compare_candidate_vs_rejected, load_json, passes_gate4
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "demo"
 
