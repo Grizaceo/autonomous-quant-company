@@ -5,6 +5,7 @@
 - [x] README opens with "not prompt trading / evolved alpha" headline.
 - [x] `docs/ALPHA_PROVENANCE.md` documents HGAT+ES v4 evidence.
 - [x] Demo script includes "From evolved alpha to invoice" close.
+- [x] Paper-derived validation roadmap added (`docs/PAPER_DERIVED_VALIDATION_UPGRADES.md`) without leaking unexecuted claims into README/Judge copy.
 
 ## Technical
 

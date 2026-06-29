@@ -30,6 +30,22 @@ Source artifacts:
 - `data/demo/live_signals.jsonl` — paper-trading signal snapshot
 - `data/demo/manifest.json` — frozen evidence bundle metadata
 
+## Engine source (curated reference)
+
+The HGAT+ES engine that produced this evidence is published as a curated,
+MIT-licensed reference repository — the architecture (`hgat_policy`), the
+Evolution Strategies trainer (`train_es_hgat`, `es_utils`), the fitness
+function (`rollout_fitness`), and the walk-forward validator
+(`walkforward_hgat`) that emits `walkforward_report.json`:
+
+- **https://github.com/Grizaceo/financial-lab-reference**
+
+`production.toml` and `walkforward_report.json` in that repo are **byte-identical**
+(SHA-256 `dc8e28b2…` and `fe87aa21…`) to the copies under `data/demo/`, so
+provenance moves from "trust the hash" to "read the engine the hash points to".
+The 20-year market data cache and vendor connectors are excluded there (vendor
+TOS); the engine code is import-coherent for inspection.
+
 ## Rejected candidate: 2019+ ensemble
 
 | Field | Value |
