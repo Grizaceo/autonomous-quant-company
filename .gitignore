@@ -35,6 +35,13 @@ demo_report.md
 .gstack/
 .commandcode/
 
+# Internal working docs (kept locally, not part of the public submission)
+docs/COMPETITIVE_REPORT_AND_BRAINSTORM.md
+docs/PRE_SUBMISSION_PLAN.md
+docs/REVIEW_2026-06-29_DAVI.md
+docs/VS_COMPARISON.md
+docs/PAPER_DERIVED_VALIDATION_UPGRADES.md
+
 # OS
 .DS_Store
 Thumbs.db
