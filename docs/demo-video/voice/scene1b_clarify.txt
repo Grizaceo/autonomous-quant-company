@@ -1,0 +1,1 @@
+Quick clarification: Financial Lab is a separate, open source repository. It is the research engine that evolved this alpha with evolution strategies. AQTC, this repository, takes that frozen evidence and operates it as a business.

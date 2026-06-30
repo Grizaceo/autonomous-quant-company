@@ -1,4 +1,4 @@
-# AQTC Hackathon Demo — Voice Script (1:20 target)
+# AQTC Hackathon Demo — Voice Script (1:35 target, 6 scenes)
 
 Voiceover dry, calm, deliberate. No music. No hype. Engineering voice.
 
@@ -12,7 +12,18 @@ Voiceover dry, calm, deliberate. No music. No hype. Engineering voice.
 
 ---
 
-## Scene 2 — THE DIFFERENCE (0:14–0:34)
+## Scene 1b — WHAT IS FINANCIAL LAB (0:14–0:30)
+
+**Visual:** infographic — "Two repositories, one pipeline" (Financial Lab vs AQTC)
+**Voice:**
+> "Quick clarification: Financial Lab is a separate, open source repository. It is the research engine that evolved this alpha with evolution strategies. AQTC, this repository, takes that frozen evidence and operates it as a business."
+
+Added because the scene 1 visual names "Financial Lab" before any narration
+explains what it is — judges watching cold were left wondering whether it's
+part of this codebase. This scene answers that immediately, before scene 2
+goes into HGAT+ES technical detail.
+
+## Scene 2 — THE DIFFERENCE (0:30–0:50)
 
 **Visual:** terminal recording — `aqtc provenance`
 **Voice:**
@@ -20,7 +31,7 @@ Voiceover dry, calm, deliberate. No music. No hype. Engineering voice.
 
 ---
 
-## Scene 3 — FALSIFICATION (0:34–0:49)
+## Scene 3 — FALSIFICATION (0:50–1:05)
 
 **Visual:** terminal recording — rejected candidate card / dashboard card
 **Voice:**
@@ -28,7 +39,7 @@ Voiceover dry, calm, deliberate. No music. No hype. Engineering voice.
 
 ---
 
-## Scene 4 — BUSINESS LOOP (0:49–1:12)
+## Scene 4 — BUSINESS LOOP (1:05–1:28)
 
 **Visual:** terminal recording — `aqtc demo --json`, dashboard :8010
 **Voice:**
@@ -36,7 +47,7 @@ Voiceover dry, calm, deliberate. No music. No hype. Engineering voice.
 
 ---
 
-## Scene 5 — CLOSE (1:12–1:19)
+## Scene 5 — CLOSE (1:28–1:35)
 
 **Visual:** dashboard overview → README headline
 **Voice:**

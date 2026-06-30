@@ -1,0 +1,11 @@
+1
+00:00:00,000 --> 00:00:04,200
+Quick clarification: Financial Lab is a separate, open-source repository.
+
+2
+00:00:05,300 --> 00:00:08,880
+It is the research engine that evolved this alpha with evolution strategies.
+
+3
+00:00:10,060 --> 00:00:14,640
+AQTC, this repository, takes that frozen evidence and operates it as a business.

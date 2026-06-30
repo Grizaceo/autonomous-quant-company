@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:02,580
+Then we falsify bad strategies explicitly.
+
+2
+00:00:03,140 --> 00:00:05,400
+A 2019+ ensemble is not buried,
+
+3
+00:00:05,520 --> 00:00:07,200
+it is rejected with full evidence:
+
+4
+00:00:07,560 --> 00:00:09,620
+Sharpe -0.544,
+
+5
+00:00:10,060 --> 00:00:11,900
+max drawdown 0.486.
+
+6
+00:00:11,920 --> 00:00:14,180
+The system refuses to hide it.

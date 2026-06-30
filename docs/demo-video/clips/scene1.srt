@@ -1,0 +1,15 @@
+1
+00:00:00,000 --> 00:00:03,240
+Most AI trading demos are exactly three things:
+
+2
+00:00:03,760 --> 00:00:06,080
+a prompt, a signal, and a chart.
+
+3
+00:00:06,940 --> 00:00:10,520
+They hide bad backtests, they skip business operations,
+
+4
+00:00:10,920 --> 00:00:13,220
+and they cannot explain where the alpha came from.
