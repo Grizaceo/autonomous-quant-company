@@ -5,7 +5,7 @@ All assets live in this directory. The shipped artifact is `aqtc_demo.mp4`.
 
 ## Final artifact
 
-- `aqtc_demo.mp4` — H.264 1920×1080, AAC 24 kHz mono, ~79 s (1:19),
+- `aqtc_demo.mp4` — H.264 1920×1080, AAC 44.1 kHz mono, ~79 s (1:19),
   voice-over + captions overlay. Plays inside any browser.
 
 ## Source assets (regenerable)
