@@ -30,12 +30,12 @@ render_bg_frame () {
 }
 
 render_scene () {
-  local bg="$1" audio="$2" caption_text="$3" out="$4"
+  local bg="$1" audio="$2" caption_text="$3" out="$4" fontsize="${5:-52}"
   local capfile="$CLIPS/_cap_$(basename "$out" .mp4).txt"
   printf '%s' "$caption_text" > "$capfile"
   ffmpeg -hide_banner -loglevel error -y \
     -i "$bg" -i "$audio" \
-    -vf "drawtext=textfile=${capfile}:fontfile=${FONT}:fontcolor=white:fontsize=52:box=1:boxcolor=black@0.55:boxborderw=20:x=(w-text_w)/2:y=h-120" \
+    -vf "drawtext=textfile=${capfile}:fontfile=${FONT}:fontcolor=white:fontsize=${fontsize}:box=1:boxcolor=black@0.55:boxborderw=20:x=(w-text_w)/2:y=h-120" \
     -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p \
     -c:a aac -b:a 192k \
     -shortest "$out"
@@ -61,7 +61,7 @@ render_scene "$CLIPS/scene1_bg.mp4" "$VOICE/scene1_hook.mp3" "From evolved alpha
 
 echo "[2] dashboard (HGAT+ES provenance)"
 render_bg_frame "$CLIPS/dashboard.png" "$D2" "$CLIPS/scene2_bg.mp4"
-render_scene "$CLIPS/scene2_bg.mp4" "$VOICE/scene2_origin.mp3" "Financial Lab: Heterogeneous Graph Attention + Evolution Strategies" "$CLIPS/scene2.mp4"
+render_scene "$CLIPS/scene2_bg.mp4" "$VOICE/scene2_origin.mp3" "Financial Lab: Heterogeneous Graph Attention + Evolution Strategies" "$CLIPS/scene2.mp4" 44
 
 echo "[3] provenance dashboard (rejected candidate)"
 render_bg_frame "$CLIPS/provenance_api.png" "$D3" "$CLIPS/scene3_bg.mp4"
