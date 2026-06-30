@@ -17,7 +17,7 @@ AQTC **rejects** the 2019+ ensemble (Sharpe **-0.544**) before promoting HGAT+ES
 
 ## One-liner
 
-**No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
+**Not prompt trading. Evolved HGAT+ES alpha from Financial Lab, validated by walkforward, operated by Hermes as an auditable quantitative micro-company.**
 
 ## Catch
 

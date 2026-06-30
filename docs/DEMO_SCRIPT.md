@@ -13,7 +13,7 @@
 
 ## 0:00 Hook — Not prompt trading
 
-> "This is not another AI trading bot. It's a micro-compañía cuantitativa: alpha evolved by Financial Lab, validated by walkforward, operated by Hermes, billed through Stripe."
+> "This is not another AI trading bot. It's a quantitative micro-company: alpha evolved by Financial Lab, validated by walkforward, operated by Hermes, billed through Stripe."
 
 Show README headline. Emphasize: **no live ES training in the demo**.
 

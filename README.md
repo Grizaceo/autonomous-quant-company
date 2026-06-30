@@ -1,6 +1,6 @@
 # Autonomous Quant Company
 
-**No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
+**Not prompt trading. Evolved HGAT+ES alpha from Financial Lab, validated by walkforward, operated by Hermes as an auditable quantitative micro-company.**
 **Scientific integrity first:** AQTC leads with falsification — the 2019+ ensemble is **rejected** (Sharpe **-0.544**) before HGAT+ES v4 (Sharpe **3.255**, **5/5** folds) is promoted. Bad alpha is surfaced in the demo, report, and dashboard, not hidden.
 
 *From evolved alpha to invoice.* — HGAT+ES alpha, Hermes operations, Stripe revenue.

@@ -2,14 +2,14 @@
 
 **Title:** From evolved alpha to invoice  
 **Duration:** 2-3 minutes  
-**Catch:** No es prompt trading — alpha evolucionado por Financial Lab
+**Catch:** Not prompt trading — alpha evolved by Financial Lab
 
 ---
 
 ## Shot 1 — Hook (0:00-0:15)
 
 - **Visual:** README headline on screen
-- **VO:** "This isn't another AI trading bot. It's a micro-compañía cuantitativa — evolved alpha, walkforward validation, Hermes operations, Stripe revenue."
+- **VO:** "This isn't another AI trading bot. It's a quantitative micro-company — evolved alpha, walkforward validation, Hermes operations, Stripe revenue."
 
 ## Shot 2 — Alpha provenance (0:15-0:40)
 
