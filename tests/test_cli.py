@@ -69,7 +69,14 @@ def test_cli_report_missing_without_run(isolated_env, tmp_path, capsys):
     code = main(["report", "--out", str(out)])
     assert code == 1
     err = capsys.readouterr().err
-    assert "aqtc: dato faltante" in err
+    assert "aqtc: missing data file" in err
+
+
+def test_cli_debug_reraises_instead_of_swallowing(isolated_env, tmp_path, monkeypatch):
+    monkeypatch.setenv("AQTC_DEBUG", "1")
+    out = tmp_path / "missing.md"
+    with pytest.raises(FileNotFoundError):
+        main(["report", "--out", str(out)])
 
 
 def test_cli_demo_approve_spend_flag(isolated_env, capsys, monkeypatch):
