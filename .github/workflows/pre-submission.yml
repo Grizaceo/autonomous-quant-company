@@ -1,0 +1,43 @@
+name: Pre-submission Gate
+
+on:
+  push:
+    branches: [feat/pre-submission-hardening, main, master]
+  pull_request:
+
+jobs:
+  pre-submission:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,api,mcp,live]"
+
+      - name: Secret scan
+        run: scripts/pre_submission_secret_scan.sh
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Mypy
+        run: mypy src tests
+
+      - name: Tests with coverage gate
+        env:
+          AQTC_DISABLE_HERMES_ENV: "true"
+        run: pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=88
+
+      - name: Judge smoke v2
+        env:
+          AQTC_DISABLE_HERMES_ENV: "true"
+        run: scripts/judge_smoke_v2.sh
