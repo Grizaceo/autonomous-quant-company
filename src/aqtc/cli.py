@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -79,8 +80,7 @@ def _config_from_args(args: argparse.Namespace) -> AQTCConfig:
     return replace(cfg, **updates) if updates else cfg
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+def _dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "regime":
         cfg = replace(AQTCConfig(), nvidia_mode=args.provider)
@@ -173,6 +173,22 @@ def main(argv: list[str] | None = None) -> int:
 
     raise AssertionError(args.command)
 
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        return _dispatch(args)
+    except FileNotFoundError as exc:
+        print(
+            f"aqtc: dato faltante: {exc}. Instala desde la raiz del repo con "
+            f"`pip install -e .` para resolver data/demo/. Ver README.",
+            file=sys.stderr,
+        )
+        return 1
+    except Exception as exc:
+        print(f"aqtc: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 1
 
 if __name__ == "__main__":
     raise SystemExit(main())

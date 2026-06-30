@@ -64,14 +64,12 @@ def test_cli_regime_json(isolated_env, capsys):
     assert data["provider"] == "mock-nemotron"
 
 
-def test_cli_report_missing_without_run(isolated_env, tmp_path):
+def test_cli_report_missing_without_run(isolated_env, tmp_path, capsys):
     out = tmp_path / "missing.md"
-    try:
-        main(["report", "--out", str(out)])
-    except FileNotFoundError:
-        pass
-    else:
-        raise AssertionError("expected FileNotFoundError when no report exists")
+    code = main(["report", "--out", str(out)])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "aqtc: dato faltante" in err
 
 
 def test_cli_demo_approve_spend_flag(isolated_env, capsys, monkeypatch):
