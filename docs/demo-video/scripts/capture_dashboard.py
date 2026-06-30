@@ -1,4 +1,4 @@
-"""Capture screenshots of the AQTC FastAPI dashboard at :8010.
+"""Capture screenshots of the AQTC FastAPI dashboard at :8010 in 1920x1080.
 
 Writes PNGs into docs/demo-video/clips/.
 """
@@ -20,13 +20,13 @@ ENDPOINTS = [
     ("status_api", "/status"),
 ]
 
-VIEWPORT = {"width": 1280, "height": 800}
+VIEWPORT = {"width": 1920, "height": 1080}
 
 
 def main() -> int:
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        ctx = browser.new_context(viewport=VIEWPORT)
+        ctx = browser.new_context(viewport=VIEWPORT, device_scale_factor=2)
         page = ctx.new_page()
         for name, path in ENDPOINTS:
             url = f"{BASE}{path}"

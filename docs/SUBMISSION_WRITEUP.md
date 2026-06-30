@@ -4,7 +4,7 @@
 
 ## Tweet (≤280 chars)
 
-Not prompt trading — evolved HGAT+ES alpha (Sharpe 3.255, 5/5 walkforward folds). We *reject* the bad ensemble (-0.544) before we trade. Hermes runs the micro-compañía: $2 data → validate → paper trade → $19 report, net $17. Stripe test PaymentIntent succeeded. @NousResearch #HermesHackathon
+Not prompt trading — evolved HGAT+ES alpha (Sharpe 3.255, 5/5 folds). We *reject* the bad ensemble (-0.544) before we trade. Hermes runs the micro-compañía: $2 data → validate → paper trade → $19 report, net $17. Stripe PaymentIntent succeeded. @NousResearch #HermesHackathon
 
 ## Thread (3 posts)
 
