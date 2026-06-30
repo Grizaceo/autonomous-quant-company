@@ -40,11 +40,12 @@ function (`rollout_fitness`), and the walk-forward validator
 
 - **https://github.com/Grizaceo/financial-lab-reference**
 
-`production.toml` and `walkforward_report.json` in that repo are **byte-identical**
-(SHA-256 `dc8e28b2…` and `fe87aa21…`) to the copies under `data/demo/`, so
-provenance moves from "trust the hash" to "read the engine the hash points to".
-The 20-year market data cache and vendor connectors are excluded there (vendor
-TOS); the engine code is import-coherent for inspection.
+`production.toml` (at `configs/`) and `walkforward_report.json` (at `results/`)
+in that repo are **byte-identical** (SHA-256 `dc8e28b2…` and `fe87aa21…`) to the
+copies under `data/demo/` in this repo. Provenance moves from "trust the hash"
+to "read the engine the hash points to" — same files, same hashes, independent
+copy. The 20-year market data cache and vendor connectors are excluded from the
+reference repo (vendor TOS); the engine code is import-coherent for inspection.
 
 ## Rejected candidate: 2019+ ensemble
 

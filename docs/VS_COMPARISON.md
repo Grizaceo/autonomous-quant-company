@@ -17,7 +17,7 @@ AQTC does **not** beat every competitor on every axis. Its strongest claim is na
 | Evidence | SHA-256 proof manifest + frozen demo artifacts | Strong app/workflow evidence | Mixed / more fixture-like | Strong technical evidence |
 | Business loop | Procure data, approve risk, paper rebalance, bill report | Probably broader loop completeness | Similar fund story | Less focused on customer report revenue |
 | Safety posture | Paper MockBroker by default; live trading denied | Good if policy-bounded | Unknown/varies | Domain-specific |
-| Test maturity today | 114 tests, 88.17% coverage after P1 | Strong rival | Likely lower | Strong rival |
+| Test maturity today | 128 tests, 94.39% coverage | Strong rival | Likely lower | Strong rival |
 | Judge readability | Improved via landing + comparison + smoke gates | Strong | Medium | Depends on technical judge |
 | Main weakness | Less spectacular on-chain/infra depth | Less scientific alpha provenance | Less proof/falsification | Less direct business/revenue proof |
 
