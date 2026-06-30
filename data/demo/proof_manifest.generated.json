@@ -1,49 +1,49 @@
 {
   "artifacts": [
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "data/demo/walkforward_report.json",
       "sha256": "fe87aa218f90b55c7c796e32536b87342838d865cd9603de3658ca04bf730817",
       "size_bytes": 3229
     },
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "data/demo/rejected_ensemble_2019.json",
       "sha256": "682c7e4a7d4703cd341ac720350d7bcb751079902c2a29cf320d843ca822eaa7",
       "size_bytes": 969
     },
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "data/demo/production.toml",
       "sha256": "dc8e28b2e39475e5dd967ef9fcb932d8b3ef702cb7b2d0441423cf2d9ee56ed0",
       "size_bytes": 1540
     },
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "data/demo/live_signals.jsonl",
       "sha256": "13ff2414f78e5357f373132d0a5e829e6189f03e947ea22d6582acb21a97df14",
       "size_bytes": 4915
     },
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "data/demo/manifest.json",
       "sha256": "2d489e08748c5d7a127b441e639a2bca4a62997c8210a64b6d3d40377b271f55",
       "size_bytes": 816
     },
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "docs/proof/stripe_test_paymentintent_redacted.json",
       "sha256": "8717205dbbca4d1cb75f31adf0a85e681c120be01f1464e36e28592434f0261a",
       "size_bytes": 308
     },
     {
-      "generated_at": "2026-06-29T10:18:52Z",
+      "generated_at": "2026-06-30T23:44:15Z",
       "path": "samples/customer_report.md",
-      "sha256": "730cf8c4ac5b18a2298a842d2b32d3a1824464f12a0fd2226d3fa72953ad8ca9",
-      "size_bytes": 1362
+      "sha256": "62b5b8f548f18ee3d831614dcea10a8141ec0c3dff771eb828ce60aa7d10a914",
+      "size_bytes": 1997
     }
   ],
   "bundle": "aqtc-proof-manifest",
-  "generated_at": "2026-06-29T10:18:52Z",
+  "generated_at": "2026-06-30T23:44:15Z",
   "version": "1.0.0"
 }
