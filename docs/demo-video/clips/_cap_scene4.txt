@@ -1,1 +1,1 @@
-Business loop: policy gate + Nemotron + Stripe
+Business loop: policy gate + Nemotron + Stripe ledger

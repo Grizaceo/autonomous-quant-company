@@ -1,1 +1,1 @@
-Frozen HGAT+ES v4 walkforward evidence
+Financial Lab: Heterogeneous Graph Attention + Evolution Strategies

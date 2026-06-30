@@ -1,6 +1,6 @@
 # Autonomous Quant Company
 
-**No es prompt trading. Es alpha evolucionado por Financial Lab, validado por walkforward, operado por Hermes como una micro-compañía cuantitativa auditable.**
+**Not prompt trading. Evolved HGAT+ES alpha from Financial Lab, validated by walkforward, operated by Hermes as an auditable quantitative micro-company.**
 **Scientific integrity first:** AQTC leads with falsification — the 2019+ ensemble is **rejected** (Sharpe **-0.544**) before HGAT+ES v4 (Sharpe **3.255**, **5/5** folds) is promoted. Bad alpha is surfaced in the demo, report, and dashboard, not hidden.
 
 *From evolved alpha to invoice.* — HGAT+ES alpha, Hermes operations, Stripe revenue.
@@ -17,6 +17,8 @@ A Hermes-powered autonomous quantitative research company for the NVIDIA × Stri
 | Black box | Full provenance: `aqtc provenance --json`, MCP, API `/provenance` |
 
 **Key principle:** ES is verifiable alpha origin/provenance — not heavy live training in the demo.
+
+**Why a heterogeneous graph + Evolution Strategies** (not prompt trading, not backprop/PPO)? See **[docs/WHY_HGAT_ES.md](docs/WHY_HGAT_ES.md)** — typed `stock`/`commodity`/`macro`/`risk` nodes, the non-differentiable cost-aware reward that rules out gradients, the 19D genotype, and the byte-identical SHA-256 provenance anchor.
 
 **vs SOLVENT:** SOLVENT sells research briefs; AQTC sells evolved alpha proven with 5-fold walkforward.
 

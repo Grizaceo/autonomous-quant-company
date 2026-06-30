@@ -5,7 +5,7 @@ All assets live in this directory. The shipped artifact is `aqtc_demo.mp4`.
 
 ## Final artifact
 
-- `aqtc_demo.mp4` — H.264 1280×720, AAC 24 kHz mono, 89.6 s (1:29),
+- `aqtc_demo.mp4` — H.264 1920×1080, AAC 24 kHz mono, ~79 s (1:19),
   voice-over + captions overlay. Plays inside any browser.
 
 ## Source assets (regenerable)
@@ -53,7 +53,7 @@ agg ../recordings/aqtc_demo_provenance.cast \
 | 4 | status_api.png (regime + ledger)      | 23.2 s           | "Business loop: policy gate + Nemotron + Stripe" |
 | 5 | dashboard.png (close)                 | 20.8 s           | "From evolved alpha to invoice."           |
 
-Total: 89.6 s.
+Total narration target: 89.6 s (the rendered `aqtc_demo.mp4` runs ~79 s).
 
 ## What the demo proves (evidence shown in video)
 

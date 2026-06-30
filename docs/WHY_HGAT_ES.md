@@ -152,7 +152,48 @@ rather than a lucky fit.
 | **LSTM** (recurrent per-asset signal) | Cheap, well-understood temporal model | No cross-asset / cross-type attention and no typed edges, so commodity/macro/risk influence on equities must be hand-engineered. |
 | **Linear / classical factor model** | Maximally interpretable, low-overfit risk | Cannot represent regime-dependent, non-linear driver fusion or be co-optimized with the 19-dim genotype. Overfit risk is instead offset by 5-fold walkforward + explicit falsification of the rejected ensemble. |
 
-## 6. Inspect it yourself
+## 6. Scope & limits of the evidence
+
+We state plainly what the frozen walkforward does and does **not** establish, so the
+architecture argument above is not mistaken for a production-validated track record.
+The reasoning for HGAT+ES is *design-level* and holds independently; the headline
+Sharpe is *research-grade*, and these are the open questions a careful reviewer
+should ask.
+
+- **The 5 folds are not 5 independent years.** `step_size=50 < test_window=100`, so
+  consecutive test windows overlap 50%, and all five fall inside
+  **2012-06-22 → 2013-08-16** — a single ~14-month window
+  (`data/demo/walkforward_report.json`, `folds[].test_*_date`). Effective
+  out-of-sample is closer to one benign regime than five independent draws;
+  `std_sharpe = 1.531` across correlated folds understates true uncertainty.
+- **Single seed for the accepted config.** The promoted run used `seed = 42` only
+  (`production.toml`), while the *rejected* ensemble used three seeds (7, 8, 9). With
+  no seed dispersion for the winner, skill and a lucky ES draw can't yet be
+  separated — fold Sharpe already ranges 0.87 → 5.55.
+- **Stress-regime robustness is shown only for the failure.** We reject a 2019+
+  ensemble (Sharpe −0.544), but the **accepted** config is never tested on 2019+,
+  COVID-2020, or 2022. The falsification proves the framework *can* fail
+  out-of-regime; it does not prove the accepted model survives stress.
+- **Thin, leveraged universe.** 10 IPSA names (`n_stocks = 10`) with risk genes
+  capping `max_gross = 10`, `max_active = 6`. Pairing Sharpe 3.255 with MaxDD 0.032
+  on a small, leveraged book is unusually clean — a reviewer should see the
+  cost/financing model (commission + spread + borrow) and a look-ahead/survivorship
+  check before treating it as tradable.
+- **Deployed ≠ validated config.** The live snapshot in `data/demo/live_signals.jsonl`
+  was generated with `d_model = 64, pop_size = 20, n_generations = 20`; the validated
+  walkforward used `128 / 30 / 50`. The 3.255 result describes the validated config,
+  not the one emitting the sample allocations.
+
+**What would upgrade this from research-grade to production-validated:** (i) multi-seed
+dispersion for the accepted config; (ii) non-overlapping walkforward spanning
+2008 / 2020 / 2022 stress regimes *with the accepted config*; (iii) net-of-cost
+comparison against equal-weight, momentum, and a linear-factor baseline over the same
+windows; (iv) a deflated Sharpe / PBO accounting for the config search; (v) reconcile
+the deployed (64) vs validated (128) controller. None of these change *why* HGAT+ES is
+the right architecture — they are what turns a promising walkforward into a defensible
+alpha.
+
+## 7. Inspect it yourself
 
 ```bash
 aqtc provenance --json                         # engine, model, 19D genotype, accepted vs rejected

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AQTC — Autonomous Quant Company</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">NVIDIA × Stripe × Nous Hackathon</p>
+      <h1>No es prompt trading. Es alpha evolucionado.</h1>
+      <p class="lede">
+        AQTC turns a frozen, falsified Financial Lab alpha into an auditable paper-trading
+        company loop: validate strategy, reject bad ensemble, approve risk, rebalance on paper,
+        bill a customer report, and leave a machine-checkable evidence trail.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="../SUBMISSION_WRITEUP.md">Read submission writeup</a>
+        <a class="button secondary" href="../COMPETITIVE_REPORT_AND_BRAINSTORM.md">Competitive report</a>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="AQTC evidence metrics">
+      <article class="metric-card">
+        <span class="label">Accepted alpha</span>
+        <strong>Sharpe 3.255</strong>
+        <p>Mean walk-forward Sharpe across frozen HGAT+ES validation artifacts.</p>
+      </article>
+      <article class="metric-card">
+        <span class="label">Robustness</span>
+        <strong>5/5 folds</strong>
+        <p>All validation folds positive; no hand-picked single backtest screenshot.</p>
+      </article>
+      <article class="metric-card danger">
+        <span class="label">Rejected strategy</span>
+        <strong>Sharpe -0.544</strong>
+        <p>The failed 2019+ ensemble is shown, not hidden. Falsification is part of the product.</p>
+      </article>
+      <article class="metric-card">
+        <span class="label">Operating result</span>
+        <strong>$17 net</strong>
+        <p>Mock/test-mode company loop: $19 report revenue minus $2 data procurement.</p>
+      </article>
+    </section>
+
+    <section class="panel two-col">
+      <div>
+        <h2>Why this beats prompt trading</h2>
+        <p>
+          Prompt trading asks a language model to improvise a trade. AQTC does the opposite:
+          it starts with offline evolved alpha, freezes the evidence, compares it against a bad
+          rejected strategy, and only then lets agents operate inside a policy-bounded business loop.
+        </p>
+      </div>
+      <ul class="check-list">
+        <li>Frozen provenance: SHA-256 proof manifest and demo artifacts.</li>
+        <li>Risk gate: no live broker execution by default.</li>
+        <li>Public contracts: CLI, API and MCP outputs are test-locked.</li>
+        <li>Revenue proof path: Stripe test mode optional, mock ledger deterministic.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Run it yourself</h2>
+      <pre><code>pip install -e ".[dev,api,mcp,live]"
+aqtc demo
+pytest -q --cov=aqtc --cov-report=term-missing
+scripts/judge_smoke_v2.sh</code></pre>
+      <p class="note">
+        Default mode is safe: paper MockBroker, mock/test-mode Stripe path, and local policy approval.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Judge checklist</h2>
+      <div class="grid-list">
+        <span>Evidence integrity tests</span>
+        <span>Secrets scan gate</span>
+        <span>CLI/API/MCP contracts</span>
+        <span>Business invariant suite</span>
+        <span>Static comparison card</span>
+        <span>Reproducible smoke script</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
