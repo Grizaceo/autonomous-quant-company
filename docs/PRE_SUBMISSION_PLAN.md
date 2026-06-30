@@ -1,349 +1,634 @@
-# PLAN PRE-SUBMISSION — AQTC
+# PLAN PRE-SUBMISSION HARDENING — AQTC
 ## Branch: `feat/pre-submission-hardening`
-## Objetivo: llevar AQTC de "hackathon demo" a "production-grade submission"
-## Evita archivos del cursor agent (docs principales, base.py, judge_smoke.sh)
+## Objetivo: envío antes del deadline con evidencia ejecutable, test suite productiva y cero colisión con el cursor agent
 
 ---
 
-## FASE 0: BACKUP (5 min)
-### M0.1 — Commit assets en riesgo
+## 0. Auditoría del plan anterior — hallazgos
 
-Archivos modified sin commitear que pueden perderse:
+### Baseline verificado ahora
 
+Comandos ejecutados en `feat/pre-submission-hardening`:
+
+```bash
+pytest -q --cov=aqtc --cov-report=term-missing
+ruff check .
+mypy src tests
 ```
-git stash push -m "WIP: demo-video + submission + cli changes"
-git checkout -b feat/pre-submission-hardening
-git stash pop
-git add docs/demo-video/ docs/SUBMISSION_WRITEUP.md
-git commit -m "feat(submission): backup demo-video assets + writeup"
-```
 
-**NO tocar**: cli.py, test_cli.py (quedan staged para después)
+Resultado real:
+
+- `53 passed`
+- Coverage total: `84.26%`
+- `ruff check .`: clean
+- `mypy src tests`: clean, 42 source files
+
+### Problemas del plan anterior
+
+1. **Estaba desactualizado**: Fase 0 ya se hizo en la branch.
+2. **Confundía producción con cantidad de tests**: proponía subir a ~128 tests sin priorizar riesgo. Eso infla suite, no necesariamente aumenta confianza.
+3. **Duplicaba tests existentes**: `test_nemotron_adapter.py` y `test_live_adapters.py` ya cubren parte del mismo adapter.
+4. **No separaba suites por tipo**: unit/integration/contract/evidence/security/smoke mezcladas.
+5. **No tenía gates de envío**: faltaba matriz final con comandos obligatorios.
+6. **No incluía secret scan ni proof verification como gates**: crítico para envío público.
+7. **No trataba `.venv-devonly/` y `.venv-smoke/`**: aparecen untracked y deben borrarse o ignorarse antes del envío.
+8. **Coverage target mal calibrado**: ya estamos en 84.26%; el objetivo razonable pre-envío es `>=88%` o `>=90%` en módulos no-harness, no simplemente “más tests”.
 
 ---
 
-## FASE 1: TEST SUITE DE PRODUCCIÓN (3-4h)
-### Objetivo: subir de 53 tests a ~120 tests, cobertura >85%
+## 1. Estado actual de branch
 
-#### M1.1 — tests/test_events.py (NUEVO — 0% cobertura hoy)
+Commits ya hechos:
 
-```python
-# EventLog: append, read, persistence, hash-chain (si se agrega)
-test_event_append_and_read
-test_event_persistence_across_instances
-test_event_fields_present  # actor, action, summary, timestamp, evidence
-test_event_json_serializable
-test_event_empty_log_returns_empty_list
-test_event_ordering_is_chronological
+```text
+ee7535e feat(submission): backup demo-video assets + writeup + competitive report + plan
+29eb2bd feat(cli): backup cli + test_cli changes from main
 ```
 
-#### M1.2 — tests/test_signals.py (NUEVO — signals.py sin tests dedicados)
+Pendientes untracked actuales:
 
-```python
-# TradingSignal, PositionSignal, cap_signal, load_latest_signal
-test_cap_signal_reduces_gross_to_max
-test_cap_signal_preserves_relative_weights
-test_cap_signal_no_change_when_under_max
-test_cap_signal_with_zero_positions
-test_load_latest_signal_from_jsonl
-test_load_latest_signal_empty_file_raises
-test_trading_signal_dataclass_fields
-test_position_signal_dataclass_fields
+```text
+.venv-devonly/
+.venv-smoke/
+docs/MODULAR_FIX_PLAN.md
 ```
 
-#### M1.3 — tests/test_portfolio.py (NUEVO — portfolio.py sin tests dedicados)
+Acción:
 
-```python
-# MockBroker: rebalance, load, persistence
-test_broker_rebalance_creates_positions
-test_broker_rebalance_respects_weights
-test_broker_load_returns_empty_initially
-test_broker_persistence_across_instances
-test_broker_rebalance_empty_signal
-test_broker_position_count_matches_signal
-test_broker_gross_exposure_capped
+- `.venv-devonly/` y `.venv-smoke/`: borrar o agregar a `.gitignore` si son generadas recurrentemente.
+- `docs/MODULAR_FIX_PLAN.md`: reemplazado por este plan; no commitear salvo que quieras conservarlo como histórico.
+
+---
+
+## 2. Regla de no-colisión con el cursor agent
+
+### NO tocar
+
+- `README.md`
+- `docs/JUDGE_ONE_PAGER.md`
+- `docs/PITCH.md`
+- `docs/ARCHITECTURE.md`
+- `docs/WHY_HGAT_ES.md`
+- `docs/ALPHA_PROVENANCE.md`
+- `docs/EXTERNAL_SUBMISSION.md`
+- `docs/MCP_SERVER.md`
+- `docs/SUBMISSION_CHECKLIST.md`
+- `docs/PAPER_DERIVED_VALIDATION_UPGRADES.md`
+- `scripts/judge_smoke.sh`
+- `scripts/print_external_submission.sh`
+- `src/aqtc/financial_core/harness/base.py`
+
+### Permitido
+
+- Archivos nuevos bajo `tests/`
+- Archivos nuevos bajo `docs/landing/`
+- `docs/VS_COMPARISON.md`
+- `scripts/judge_smoke_v2.sh`
+- `.github/workflows/pre_submission.yml` si no existe pipeline equivalente
+- `src/aqtc/events.py` solo si se implementa hash-chain backward compatible
+- `pyproject.toml` solo para subir threshold de coverage después de que pase la suite
+- `.gitignore` solo para ignorar `.venv-devonly/` y `.venv-smoke/`
+
+---
+
+## 3. Estrategia de test suite de producción
+
+No vamos por “más tests” ciegamente. Vamos por riesgo.
+
+### Test matrix
+
+```yaml
+test_strategy:
+  artifact: "AQTC hackathon submission: CLI + API + MCP + business cycle + frozen financial evidence"
+  rationale: "El proyecto mueve dinero simulado/test-mode, decide trades paper, publica claims cuantitativos y será revisado por jueces externos; los riesgos principales son integridad de evidencia, seguridad por defecto, drift de outputs y fallos de integración."
+  criticality: "HIGH"
+
+  selected_types:
+    - rationale: "Módulos con lógica pura: validation, risk, signals, portfolio, config, secrets, provenance; requieren branch coverage y boundary tests."
+      type: "unit"
+      size: "small"
+      framework: "pytest"
+      dependencies: []
+      gate: "Gate 1"
+    - rationale: "Business cycle cruza filesystem, ledger, report generation, adapter factories, FastAPI TestClient y MCP singleton; unit doubles mentirían sobre el flujo real."
+      type: "integration"
+      size: "medium"
+      framework: "pytest + FastAPI TestClient"
+      dependencies: ["tmp_path filesystem", "mock adapters", "local demo artifacts"]
+      gate: "Gate 2"
+    - rationale: "API/MCP/CLI son superficies públicas para jueces y Hermes; sus outputs deben mantener contrato mínimo."
+      type: "contract"
+      size: "medium"
+      framework: "pytest schema assertions"
+      dependencies: ["JSON output from CLI/API/MCP"]
+      gate: "Gate 4"
+    - rationale: "El envío necesita un go/no-go ejecutable por terceros: demo, provenance, status, report, tests y secret scan."
+      type: "smoke"
+      size: "large"
+      framework: "bash + pytest + CLI"
+      dependencies: ["local repo", "optional env secrets"]
+      gate: "Gate 5"
+
+  rejected_types:
+    - reason: "No hay UI interactiva crítica nueva en esta branch; landing page estática no justifica Playwright antes del deadline."
+      type: "e2e"
+    - reason: "No se introduce parser/matemática nueva con dominio no acotado; usar Hypothesis ahora no da ROI frente a tests de evidencia/contrato."
+      type: "property-based"
+    - reason: "No hay componente frontend con estado; la landing estática se valida por smoke/manual visual si hay tiempo."
+      type: "component"
+
+  deliberately_skipped:
+    - why: "Live trading está explícitamente fuera de scope y denegado por policy; probar broker real sería contrario al safety posture."
+      what: "Pruebas contra broker real / live execution"
+    - why: "Stripe/NVIDIA live dependen de secretos; deben ser smoke opcional: skip si falta secret, fail si secret existe y falla."
+      what: "CI obligatoria contra servicios externos reales"
 ```
 
-#### M1.4 — tests/test_config_extended.py (NUEVO — solo 2 tests hoy)
+---
 
-```python
-# AQTCConfig: todos los campos, defaults, env overrides
-test_config_default_values
-test_config_stripe_mode_override
-test_config_nvidia_mode_override
-test_config_live_trading_override
-test_config_auto_approve_spend_override
-test_config_report_price_override
-test_config_data_purchase_override
-test_config_approval_policy_path_override
-test_config_ensure_state_creates_dir
-test_config_demo_data_dir_exists
-test_config_custom_state_dir
+## 4. FASE P0 — Higiene y bloqueo de riesgos de envío
+
+### P0.1 — Limpiar untracked generados
+
+Acción:
+
+```bash
+rm -rf .venv-devonly .venv-smoke
+# o si son necesarios recurrentemente:
+printf '\n.venv-devonly/\n.venv-smoke/\n' >> .gitignore
 ```
 
-#### M1.5 — tests/test_secrets.py (NUEVO — secrets.py sin tests)
+Verificación:
 
-```python
-# get_secret: env vars, file fallback, priority
-test_get_secret_from_env_var
-test_get_secret_from_file
-test_get_secret_env_overrides_file
-test_get_secret_missing_returns_none
-test_get_secret_empty_string_returns_none
-test_disable_hermes_env_flag
+```bash
+git status --short
 ```
 
-#### M1.6 — tests/test_validation_extended.py (EXPAND — solo 3 tests hoy)
+Criterio: no quedan venvs untracked.
 
-```python
-# validation.py: edge cases, malformed data, boundary conditions
-test_gate4_rejects_zero_sharpe
-test_gate4_rejects_negative_folds
-test_gate4_accepts_boundary_sharpe  # exact threshold
-test_compare_candidate_equal_strategies
-test_compare_candidate_reversed_order
-test_load_json_missing_file_raises
-test_load_json_invalid_json_raises
-test_walkforward_report_structure_validates
-test_rejected_ensemble_structure_validates
+---
+
+### P0.2 — Secret scan pre-publicación
+
+Archivo nuevo recomendado: `scripts/pre_submission_secret_scan.sh`
+
+Patrones mínimos:
+
+```text
+sk_live_
+rk_live_
+whsec_
+nvapi-
+sk-or-v1-
+OPENROUTER_API_KEY=
+STRIPE_SECRET_KEY=
+NVIDIA_API_KEY=
 ```
 
-#### M1.7 — tests/test_business_cycle_extended.py (EXPAND — solo 1 test hoy)
+Comando manual:
 
-```python
-# Business cycle: todos los paths, edge cases, error handling
-test_cycle_with_mock_stripe
-test_cycle_with_stripe_test_mode
-test_cycle_with_live_trading_blocked
-test_cycle_report_contains_all_sections
-test_cycle_report_contains_accepted_metrics
-test_cycle_report_contains_rejected_metrics
-test_cycle_report_contains_revenue_proof
-test_cycle_report_contains_not_investment_advice
-test_cycle_reset_clears_events
-test_cycle_reset_clears_ledger
-test_cycle_reset_clears_portfolio
-test_cycle_multiple_sequential_produce_consistent_results
-test_cycle_with_auto_approve_spend
-test_cycle_without_auto_approve_spend
-test_cycle_result_to_dict_roundtrip
-test_cycle_result_json_serializable
-test_cycle_nemotron_provider_recorded
-test_cycle_gross_exposure_within_policy
+```bash
+grep -RInE '(sk_live_|rk_live_|whsec_|nvapi-|sk-or-v1-|OPENROUTER_API_KEY=|STRIPE_SECRET_KEY=|NVIDIA_API_KEY=)' \
+  --exclude-dir=.git --exclude-dir=.venv --exclude-dir=.venv-devonly --exclude-dir=.venv-smoke . || true
 ```
 
-#### M1.8 — tests/test_risk_guards_extended.py (EXPAND — solo 3 tests hoy)
+Criterio: solo placeholders/documentación segura; cero secretos reales.
+
+---
+
+### P0.3 — Commit por bloques, no monolito
+
+Orden de commits recomendado:
+
+1. `feat(test): add evidence and contract production tests`
+2. `feat(test): add security and adapter production tests`
+3. `feat(submission): add static landing and comparison card`
+4. `feat(events): add hash-chained event log verification` (solo si queda tiempo)
+5. `chore(ci): add pre-submission gate workflow`
+
+---
+
+## 5. FASE P1 — Suite de producción mínima obligatoria
+
+Objetivo: no inflar a 128 tests por volumen. Objetivo real:
+
+- Coverage total: `>=88%` primero, `>=90%` si no rompe timing.
+- Subir especialmente módulos débiles:
+  - `secrets.py`: 45% → >=90%
+  - `mcp_server.py`: 74% → >=85%
+  - `cli.py`: 73% → >=80% mínimo
+  - `stripe_skills.py`: 81% → >=90% si se puede
+- Agregar tests que detecten drift de evidencia y contratos públicos.
+
+---
+
+### P1.1 — Evidence/proof suite
+
+Archivo nuevo: `tests/test_evidence_integrity.py`
+
+Casos:
 
 ```python
-# RiskGuard: all policy combinations, edge cases
-test_risk_allows_within_gross_limit
-test_risk_blocks_exceeding_max_active_positions
-test_risk_blocks_single_position_too_large
-test_risk_allows_empty_signal
-test_risk_policy_defaults
-test_risk_assessment_dataclass_fields
-test_cap_signal_reduces_proportionally
-test_cap_signal_with_single_position
-test_risk_with_all_zero_weights
-test_risk_with_very_small_exposure
-test_risk_with_exactly_at_limit
-```
-
-#### M1.9 — tests/test_stripe_extended.py (EXPAND — solo 2 tests hoy)
-
-```python
-# Stripe: all modes, ledger operations, edge cases
-test_ledger_spend_and_earn
-test_ledger_net_calculation
-test_ledger_empty_returns_zero
-test_ledger_multiple_operations
-test_ledger_persistence_across_instances
-test_mock_adapter_spend_records_event
-test_mock_adapter_earn_records_event
-test_mock_adapter_budget_guard_exact_limit
-test_mock_adapter_budget_guard_zero_budget
-test_mock_adapter_mode_is_mock
-test_stripe_test_mode_adapter_mode
-test_stripe_adapter_factory_mock
-test_stripe_adapter_factory_stripe_test
-```
-
-#### M1.10 — tests/test_mcp_server_extended.py (EXPAND — solo 5 tests hoy)
-
-```python
-# MCP server: all tools, error states, edge cases
-test_mcp_status_after_fresh_init
-test_mcp_run_cycle_reset_flag_false
-test_mcp_get_provenance_structure
-test_mcp_get_report_with_run_flag
-test_mcp_get_events_after_cycle
-test_mcp_get_events_empty
-test_mcp_agent_singleton_behavior
-test_mcp_reset_agent_clears_instance
-test_mcp_tool_registration_count
-```
-
-#### M1.11 — tests/test_integration_cli.py (NUEVO — integration test)
-
-```python
-# Full CLI integration: demo + provenance + status + report
-test_cli_demo_json_output_valid
-test_cli_demo_human_output_contains_decisions
-test_cli_provenance_json_matches_data
-test_cli_provenance_human_readable
-test_cli_status_after_demo
-test_cli_report_run_and_copy
-test_cli_regime_mock_mode
-test_cli_demo_with_stripe_test_mode
-test_cli_demo_with_auto_approve
-test_cli_demo_accepts_known_good_strategy
-test_cli_demo_rejects_known_bad_strategy
-```
-
-#### M1.12 — tests/test_proof_manifest.py (NUEVO — verificación SHA-256)
-
-```python
-# Proof manifest: hash verification, artifact presence
 test_proof_manifest_loads
-test_proof_manifest_has_all_artifacts
-test_proof_manifest_hashes_match_files
-test_proof_manifest_model_is_hgat_es_v4
-test_walkforward_report_json_valid
-test_production_toml_valid
-test_rejected_ensemble_json_valid
+test_proof_manifest_has_required_artifacts
+test_proof_manifest_hashes_match_current_files
+test_walkforward_report_summary_matches_claims
+test_rejected_ensemble_summary_matches_claims
+test_production_toml_matches_provenance_config
+test_customer_report_contains_falsification_section_after_cycle
+test_customer_report_contains_not_investment_advice_after_cycle
 ```
 
-### Coverage target por módulo:
+Riesgo cubierto:
 
-| Módulo | Tests hoy | Target | Archivo |
-|--------|:---------:|:------:|---------|
-| events.py | 0 | 8 | test_events.py |
-| signals.py | 0 | 8 | test_signals.py |
-| portfolio.py | 0 | 7 | test_portfolio.py |
-| config.py | 2 | 12 | test_config_extended.py |
-| secrets.py | 0 | 6 | test_secrets.py |
-| validation.py | 3 | 12 | test_validation_extended.py |
-| business_cycle.py | 1 | 18 | test_business_cycle_extended.py |
-| risk.py | 3 | 11 | test_risk_guards_extended.py |
-| stripe_skills.py | 2 | 13 | test_stripe_extended.py |
-| mcp_server.py | 5 | 9 | test_mcp_server_extended.py |
-| cli.py | 9 | 11 | test_integration_cli.py |
-| proof manifest | 0 | 7 | test_proof_manifest.py |
-| **TOTAL** | **53** | **~128** | |
+- Drift entre claims y data/demo
+- Hashes rotos
+- Regressions en falsification story
+
+Prioridad: **obligatoria antes de envío**.
 
 ---
 
-## FASE 2: FEATURES COMPETITIVAS (2h)
+### P1.2 — Secrets/security suite
 
-#### M2.1 — Landing page (archivos nuevos, 0 conflicto)
+Archivo nuevo: `tests/test_secrets_and_security.py`
 
-`docs/landing/index.html` — single-file HTML, dark theme, zero JS:
-- Hero: "No es prompt trading. Es alpha evolucionado."
-- 4 metric cards: Sharpe 3.255 | 5/5 folds | Rejected -0.544 | Net $17
-- Code block: `pip install -e . && aqtc demo`
-- Link a GitHub + video
-- Responsive, system-ui font
+Casos:
 
-`docs/landing/style.css` — minimal CSS
-
-#### M2.2 — Comparison card (archivo nuevo)
-
-`docs/VS_COMPARISON.md` — tabla SOLVENT vs AQTC vs StackFund:
-- Alpha origin, validation, revenue model, proof, CLI, tests, domain
-- Honest: qué tiene cada uno que los otros no
-
-#### M2.3 — Competitive report (ya existe, solo reference)
-
-`docs/COMPETITIVE_REPORT_AND_BRAINSTORM.md` — ya creado, referenciar desde VS_COMPARISON.md
-
----
-
-## FASE 3: HARDENING (1h)
-
-#### M3.1 — Hash-chained event log
-
-Modificar `src/aqtc/events.py`:
-- Cada evento incluye `prev_hash` y `hash` (SHA-256)
-- `verify_chain()` valida integridad completa
-- Backward compatible: eventos sin hash se tratan como legacy
-- Agregar tests en test_events.py
-
-#### M3.2 — Judge smoke v2 (archivo NUEVO)
-
-`scripts/judge_smoke_v2.sh` — NO tocar judge_smoke.sh:
-- Corre demo + provenance + status + test suite
-- Output limpio para jueces
-- Exit code 0 = PASS
-
----
-
-## ORDEN DE EJECUCIÓN
-
-```
-M0.1  (backup)              → 5 min
-M1.1  (test_events)         → 20 min
-M1.2  (test_signals)        → 20 min
-M1.3  (test_portfolio)      → 20 min
-M1.4  (test_config_ext)     → 15 min
-M1.5  (test_secrets)        → 15 min
-M1.6  (test_validation_ext) → 20 min
-M1.7  (test_biz_cycle_ext)  → 30 min
-M1.8  (test_risk_ext)       → 20 min
-M1.9  (test_stripe_ext)     → 20 min
-M1.10 (test_mcp_ext)        → 15 min
-M1.11 (test_integration)    → 20 min
-M1.12 (test_proof_manifest) → 15 min
-M2.1  (landing page)        → 45 min
-M2.2  (comparison card)     → 20 min
-M3.1  (hash-chain events)   → 45 min
-M3.2  (judge smoke v2)      → 20 min
+```python
+test_get_secret_prefers_environment_over_file
+test_get_secret_reads_key_value_file
+test_get_secret_missing_returns_none
+test_disable_hermes_env_blocks_host_env_fallback
+test_api_cycle_requires_token_when_token_configured
+test_api_cycle_allows_without_token_only_when_unconfigured
+test_live_trading_request_is_blocked_by_policy
+test_stripe_live_key_is_not_accepted_in_demo_mode_if_code_supports_check
 ```
 
-**Total estimado: ~6h**
+Riesgo cubierto:
+
+- Secret leakage/misrouting
+- API write endpoint abierto con token configurado
+- Live execution accidentally enabled
+
+Prioridad: **obligatoria antes de envío**.
 
 ---
 
-## ARCHIVOS PROTEGIDOS (NO TOCAR)
+### P1.3 — Public contract suite: CLI/API/MCP
 
-| Archivo | Razón |
-|---------|-------|
-| README.md | Cursor agent |
-| docs/JUDGE_ONE_PAGER.md | Cursor agent |
-| docs/PITCH.md | Cursor agent |
-| docs/ARCHITECTURE.md | Cursor agent |
-| docs/WHY_HGAT_ES.md | Cursor agent |
-| docs/ALPHA_PROVENANCE.md | Cursor agent |
-| docs/EXTERNAL_SUBMISSION.md | Cursor agent |
-| docs/MCP_SERVER.md | Cursor agent |
-| docs/SUBMISSION_CHECKLIST.md | Cursor agent |
-| docs/PAPER_DERIVED_VALIDATION_UPGRADES.md | Cursor agent |
-| scripts/judge_smoke.sh | Cursor agent |
-| scripts/print_external_submission.sh | Cursor agent |
-| src/aqtc/financial_core/harness/base.py | Cursor agent |
-| src/aqtc/cli.py | Modificado en main, commitear como backup |
-| tests/test_cli.py | Modificado en main, commitear como backup |
-| docs/SUBMISSION_WRITEUP.md | Commitear como backup |
-| docs/demo-video/* | Commitear como backup |
+Archivo nuevo: `tests/test_public_contracts.py`
 
-## ARCHIVOS NUEVOS (sin conflicto)
+Casos:
 
-- tests/test_events.py
-- tests/test_signals.py
-- tests/test_portfolio.py
-- tests/test_config_extended.py
-- tests/test_secrets.py
-- tests/test_validation_extended.py
-- tests/test_business_cycle_extended.py
-- tests/test_risk_guards_extended.py
-- tests/test_stripe_extended.py
-- tests/test_mcp_server_extended.py
-- tests/test_integration_cli.py
-- tests/test_proof_manifest.py
-- docs/landing/index.html
-- docs/landing/style.css
-- docs/VS_COMPARISON.md
-- scripts/judge_smoke_v2.sh
+```python
+# CLI JSON contract
+test_cli_demo_json_contract_keys
+test_cli_provenance_json_contract_keys
+test_cli_status_json_contract_keys
 
-## ARCHIVOS MODIFICADOS (con cuidado)
+# API contract
+test_api_status_contract_keys
+test_api_provenance_contract_keys
+test_api_run_cycle_contract_keys
 
-- src/aqtc/events.py (M3.1 — hash-chain, backward compatible)
+# MCP contract
+test_mcp_status_contract_keys
+test_mcp_run_cycle_contract_keys
+test_mcp_get_report_contract_keys
+test_mcp_get_events_contract_keys
+```
+
+Riesgo cubierto:
+
+- Jueces/scripts consumen JSON; si cambia shape, se rompe demo.
+- MCP tools recargados deben seguir retornando estructura estable.
+
+Prioridad: **obligatoria antes de envío**.
+
+---
+
+### P1.4 — Ledger/adapter suite
+
+Archivo nuevo: `tests/test_ledger_and_adapters.py`
+
+Casos:
+
+```python
+test_ledger_empty_net_zero
+test_ledger_spend_decreases_net
+test_ledger_earn_increases_net
+test_ledger_persists_across_instances
+test_mock_stripe_budget_guard_blocks_over_budget
+test_mock_stripe_budget_guard_allows_exact_budget
+test_adapter_factory_mock_returns_mock_adapter
+test_adapter_factory_stripe_test_returns_stripe_test_adapter_without_calling_network
+test_nemotron_auto_without_keys_returns_mock
+test_explicit_openrouter_without_key_returns_unavailable_summary
+```
+
+Riesgo cubierto:
+
+- Financial ledger arithmetic
+- Adapter factory drift
+- Optional live integrations degrade safely
+
+Prioridad: **obligatoria antes de envío**.
+
+---
+
+### P1.5 — Business invariants suite
+
+Archivo nuevo: `tests/test_business_invariants.py`
+
+Casos:
+
+```python
+test_daily_cycle_is_deterministic_in_mock_mode
+test_daily_cycle_logs_expected_actions_in_order
+test_daily_cycle_spend_requires_approval_above_threshold
+test_daily_cycle_auto_approve_spend_changes_net_result
+test_daily_cycle_never_executes_live_broker_by_default
+test_daily_cycle_portfolio_gross_exposure_within_policy
+test_daily_cycle_rejects_bad_strategy_even_when_good_strategy_accepted
+test_daily_cycle_result_is_json_serializable
+```
+
+Riesgo cubierto:
+
+- The headline business loop must not drift.
+- Falsification must remain visible.
+
+Prioridad: **obligatoria antes de envío**.
+
+---
+
+### P1.6 — Unit gap suite for low-covered modules
+
+Archivo nuevo: `tests/test_unit_gaps.py`
+
+Casos mínimos:
+
+```python
+# config
+test_config_defaults_are_safe
+test_config_env_overrides_are_applied_at_instantiation
+test_config_ensure_state_creates_state_dir
+
+# signals
+test_cap_signal_preserves_relative_weights
+test_cap_signal_noop_under_limit
+test_load_latest_signal_reads_last_jsonl_entry
+
+# portfolio
+test_mock_broker_initial_state
+test_mock_broker_rebalance_persists_positions
+
+# events
+test_event_log_empty_read
+test_event_log_append_then_read
+test_event_log_persists_across_instances
+```
+
+Riesgo cubierto:
+
+- Branches currently missed but important enough for production confidence.
+
+Prioridad: **alta**, pero después de P1.1-P1.5.
+
+---
+
+## 6. FASE P2 — Competitividad visible sin tocar docs principales
+
+### P2.1 — Static landing page
+
+Archivos nuevos:
+
+- `docs/landing/index.html`
+- `docs/landing/style.css`
+
+Contenido:
+
+- Headline: `No es prompt trading. Es alpha evolucionado.`
+- Metric cards:
+  - `Sharpe 3.255`
+  - `5/5 folds positive`
+  - `Rejected -0.544`
+  - `$17 net operating result`
+- Section: `Why this beats prompt trading`
+- Section: `Run it yourself`
+- Link al video local o YouTube si existe.
+
+No tocar `README.md`.
+
+---
+
+### P2.2 — Competitive comparison card
+
+Archivo nuevo:
+
+- `docs/VS_COMPARISON.md`
+
+Debe comparar:
+
+- SOLVENT
+- StackFund
+- SlabClaw
+- AQTC
+
+Regla: honesto. No decir que AQTC es mejor en todo.
+
+Ejemplo de veredicto:
+
+```text
+SlabClaw gana technical depth on-chain.
+SOLVENT gana completeness del business loop genérico.
+StackFund es el rival más cercano por thesis.
+AQTC gana scientific/provenance rigor: walkforward + rejected ensemble + SHA-256 artifacts.
+```
+
+---
+
+## 7. FASE P3 — Hardening opcional si queda tiempo
+
+### P3.1 — Hash-chained event log
+
+Modificar:
+
+- `src/aqtc/events.py`
+
+Requisitos:
+
+- Backward compatible con eventos antiguos sin hash.
+- Cada evento nuevo incluye `prev_hash` y `hash`.
+- Función `verify_chain()` devuelve estructura:
+
+```python
+{
+  "ok": bool,
+  "count": int,
+  "first_bad_index": int | None,
+  "reason": str | None,
+}
+```
+
+Tests:
+
+```python
+test_event_hash_chain_verifies_clean_log
+test_event_hash_chain_detects_tampering
+test_event_hash_chain_accepts_legacy_entries_as_unverified_legacy
+```
+
+Solo hacer si P1 y P2 ya están verdes.
+
+---
+
+### P3.2 — Pre-submission smoke script v2
+
+Archivo nuevo:
+
+- `scripts/judge_smoke_v2.sh`
+
+Debe correr:
+
+```bash
+python -m pytest -q
+ruff check .
+mypy src tests
+aqtc provenance --json >/tmp/aqtc_provenance.json
+aqtc demo --json >/tmp/aqtc_demo.json
+aqtc status >/tmp/aqtc_status.json
+python scripts/verify_demo_outputs.py  # si existe; si no, inline python
+```
+
+Debe incluir secret scan.
+
+Exit code:
+
+- `0`: pass
+- `1`: test/lint/type/demo failure
+- `2`: secret scan suspicious hit
+- `3`: missing required artifact
+
+---
+
+### P3.3 — CI gate workflow
+
+Archivo nuevo si no hay workflow equivalente:
+
+- `.github/workflows/pre-submission.yml`
+
+Jobs:
+
+1. install `.[dev,api,mcp,live]`
+2. `ruff check .`
+3. `mypy src tests`
+4. `pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=88`
+5. secret scan grep
+
+No usar secrets en CI.
+
+---
+
+## 8. Gate final de envío
+
+Antes de enviar, la branch debe pasar esta matriz:
+
+```bash
+# 1. Tree y branch
+git branch --show-current
+git status --short
+
+# 2. Tests + coverage
+pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=88
+
+# 3. Lint + typing
+ruff check .
+mypy src tests
+
+# 4. Demo contracts
+aqtc demo --json >/tmp/aqtc_demo.json
+aqtc provenance --json >/tmp/aqtc_provenance.json
+aqtc status >/tmp/aqtc_status.json
+python - <<'PY'
+import json
+for path in ['/tmp/aqtc_demo.json','/tmp/aqtc_provenance.json','/tmp/aqtc_status.json']:
+    json.load(open(path))
+print('json ok')
+PY
+
+# 5. Secret scan
+grep -RInE '(sk_live_|rk_live_|whsec_|nvapi-|sk-or-v1-|OPENROUTER_API_KEY=|STRIPE_SECRET_KEY=|NVIDIA_API_KEY=)' \
+  --exclude-dir=.git --exclude-dir=.venv --exclude-dir=.venv-devonly --exclude-dir=.venv-smoke . || true
+
+# 6. Protected files sanity
+git diff --name-only main..HEAD | grep -E '^(README.md|docs/(JUDGE_ONE_PAGER|PITCH|ARCHITECTURE|WHY_HGAT_ES|ALPHA_PROVENANCE|EXTERNAL_SUBMISSION|MCP_SERVER|SUBMISSION_CHECKLIST|PAPER_DERIVED_VALIDATION_UPGRADES)\.md|scripts/judge_smoke\.sh|scripts/print_external_submission\.sh|src/aqtc/financial_core/harness/base\.py)$' && echo 'PROTECTED FILE TOUCHED' && exit 1 || true
+```
+
+Criterios:
+
+- `git status --short`: limpio salvo artefactos intencionales.
+- `pytest`: pass.
+- Coverage: >=88% primero; >=90% si P1 completa sin costo alto.
+- `ruff`: pass.
+- `mypy`: pass.
+- Demo JSON: parsea.
+- Secret scan: no secretos reales.
+- Protected files: no tocados por esta branch.
+
+---
+
+## 9. Orden recomendado de ejecución
+
+```text
+P0.1 limpiar untracked
+P0.2 secret scan baseline
+P1.1 evidence/proof suite
+P1.2 secrets/security suite
+P1.3 public contracts suite
+P1.4 ledger/adapter suite
+P1.5 business invariants suite
+P1.6 unit gap suite
+P2.1 landing page
+P2.2 comparison card
+P3.2 smoke script v2
+P3.3 CI workflow
+P3.1 hash-chain events (solo si queda tiempo)
+Gate final de envío
+```
+
+Por qué este orden:
+
+1. Primero integridad y seguridad.
+2. Después contratos públicos.
+3. Después business loop.
+4. Después landing/comparación.
+5. Hash-chain es valioso pero no debe desplazar tests/evidence.
+
+---
+
+## 10. Qué NO hacer antes del envío
+
+- No reescribir docs principales mientras el cursor agent los toca.
+- No tocar `base.py`.
+- No meter live broker ni live trading.
+- No prometer Stripe/NVIDIA live si no hay artifact generado.
+- No agregar tests redundantes solo para subir count.
+- No modificar demo video salvo bug crítico.
+- No cambiar los números del pitch sin actualizar artifacts y tests.
+
+---
+
+## 11. Resultado esperado si se completa P0-P2
+
+- Branch con tests productivos: ~80-95 tests, no 128 inflados.
+- Coverage >=88%, ideal >=90%.
+- Secrets/security gates explícitos.
+- Evidence integrity machine-checked.
+- CLI/API/MCP public contracts protegidos.
+- Landing page estática para jueces.
+- Comparison honesta vs SOLVENT/StackFund/SlabClaw.
+
+Ese es un envío defendible: no el más grande, sino el más verificable.
