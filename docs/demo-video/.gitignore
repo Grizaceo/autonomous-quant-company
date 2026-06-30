@@ -3,3 +3,8 @@
 *~
 .DS_Store
 Thumbs.db
+
+# Per-cue caption text written by render_scene.py on every compose.sh run;
+# canonical subtitle content lives in clips/scene*.srt.
+clips/_top_*.txt
+clips/_sub_*.txt

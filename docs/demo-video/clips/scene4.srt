@@ -1,0 +1,31 @@
+1
+00:00:00,000 --> 00:00:01,860
+Then the business loop runs.
+
+2
+00:00:02,480 --> 00:00:04,960
+A policy boundary before any live action.
+
+3
+00:00:05,580 --> 00:00:07,440
+Nemotron summarises the regime.
+
+4
+00:00:07,940 --> 00:00:11,020
+The Stripe-style ledger records a $2 data purchase,
+
+5
+00:00:11,420 --> 00:00:13,460
+then a $19 customer report.
+
+6
+00:00:14,120 --> 00:00:16,520
+Net operating result: $17.
+
+7
+00:00:17,740 --> 00:00:19,940
+Paper broker holds four positions,
+
+8
+00:00:20,480 --> 00:00:22,140
+gross exposure capped at four.

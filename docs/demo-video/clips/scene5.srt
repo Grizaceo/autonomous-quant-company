@@ -1,0 +1,11 @@
+1
+00:00:00,000 --> 00:00:01,560
+From evolved alpha to invoice.
+
+2
+00:00:02,100 --> 00:00:03,460
+No prompt trading, no theatre.
+
+3
+00:00:03,900 --> 00:00:06,820
+Hermes agent operations, Stripe revenue. Open source.
