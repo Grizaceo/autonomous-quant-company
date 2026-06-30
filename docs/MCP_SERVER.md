@@ -6,6 +6,7 @@ AQTC exposes a FastMCP stdio server for Hermes or any MCP client.
 
 - `aqtc_status` — current policy, config, event log, ledger, and paper portfolio.
 - `aqtc_run_cycle(reset: bool = true)` — run one safe paper business cycle.
+- `aqtc_get_provenance` — frozen Financial Lab HGAT+ES alpha provenance.
 - `aqtc_get_report` — return the generated customer report, creating one if needed.
 - `aqtc_get_events` — return event log entries.
 
