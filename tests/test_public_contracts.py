@@ -45,8 +45,21 @@ def test_cli_demo_json_contract_keys(isolated_env, capsys):
 def test_cli_provenance_json_contract_keys(isolated_env, capsys):
     assert main(["provenance", "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
-    _assert_keys(data, {"engine", "model", "algorithm", "genotype_dim", "production_config", "accepted", "rejected"})
-    _assert_keys(data["accepted"], {"mean_sharpe", "n_folds", "positive_fold_ratio", "mean_max_drawdown"})
+    _assert_keys(
+        data,
+        {
+            "engine",
+            "model",
+            "algorithm",
+            "genotype_dim",
+            "production_config",
+            "accepted",
+            "rejected",
+        },
+    )
+    _assert_keys(
+        data["accepted"], {"mean_sharpe", "n_folds", "positive_fold_ratio", "mean_max_drawdown"}
+    )
     _assert_keys(data["rejected"], {"name", "sharpe", "max_drawdown", "reason"})
 
 
@@ -55,7 +68,9 @@ def test_cli_status_json_contract_keys(isolated_env, capsys):
     capsys.readouterr()
     assert main(["status"]) == 0
     data = json.loads(capsys.readouterr().out)
-    _assert_keys(data, {"events", "ledger", "portfolio", "policy", "provenance", "config", "report_path"})
+    _assert_keys(
+        data, {"events", "ledger", "portfolio", "policy", "provenance", "config", "report_path"}
+    )
 
 
 @pytest.fixture
@@ -69,17 +84,39 @@ def client(tmp_path, monkeypatch):
 
 def test_api_status_contract_keys(client):
     data = client.get("/status").json()
-    _assert_keys(data, {"events", "ledger", "portfolio", "policy", "provenance", "config", "report_path"})
+    _assert_keys(
+        data, {"events", "ledger", "portfolio", "policy", "provenance", "config", "report_path"}
+    )
 
 
 def test_api_provenance_contract_keys(client):
     data = client.get("/provenance").json()
-    _assert_keys(data, {"engine", "model", "algorithm", "genotype_dim", "production_config", "accepted", "rejected"})
+    _assert_keys(
+        data,
+        {
+            "engine",
+            "model",
+            "algorithm",
+            "genotype_dim",
+            "production_config",
+            "accepted",
+            "rejected",
+        },
+    )
 
 
 def test_api_run_cycle_contract_keys(client):
     data = client.post("/cycle/run").json()
-    _assert_keys(data, {"accepted_strategy", "rejected_bad_strategy", "stripe_net_usd", "report_path", "event_count"})
+    _assert_keys(
+        data,
+        {
+            "accepted_strategy",
+            "rejected_bad_strategy",
+            "stripe_net_usd",
+            "report_path",
+            "event_count",
+        },
+    )
 
 
 @pytest.fixture
@@ -87,19 +124,32 @@ def isolated_mcp(tmp_path, monkeypatch):
     monkeypatch.setenv("AQTC_STATE_DIR", str(tmp_path))
     monkeypatch.setenv("AQTC_DISABLE_HERMES_ENV", "true")
     mcp_server.reset_agent()
-    mcp_server._agent_instance = AutonomousQuantCompanyAgent(AQTCConfig(demo_data_dir=DEMO_DATA_DIR, state_dir=tmp_path))
+    mcp_server._agent_instance = AutonomousQuantCompanyAgent(
+        AQTCConfig(demo_data_dir=DEMO_DATA_DIR, state_dir=tmp_path)
+    )
     yield
     mcp_server.reset_agent()
 
 
 def test_mcp_status_contract_keys(isolated_mcp):
     data = mcp_server.aqtc_status()
-    _assert_keys(data, {"events", "ledger", "portfolio", "policy", "provenance", "config", "report_path"})
+    _assert_keys(
+        data, {"events", "ledger", "portfolio", "policy", "provenance", "config", "report_path"}
+    )
 
 
 def test_mcp_run_cycle_contract_keys(isolated_mcp):
     data = mcp_server.aqtc_run_cycle(reset=True)
-    _assert_keys(data, {"accepted_strategy", "rejected_bad_strategy", "stripe_net_usd", "report_path", "event_count"})
+    _assert_keys(
+        data,
+        {
+            "accepted_strategy",
+            "rejected_bad_strategy",
+            "stripe_net_usd",
+            "report_path",
+            "event_count",
+        },
+    )
 
 
 def test_mcp_get_report_contract_keys(isolated_mcp):

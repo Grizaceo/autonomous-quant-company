@@ -51,13 +51,17 @@ def test_mock_stripe_budget_guard_allows_exact_budget(tmp_path):
 
 
 def test_adapter_factory_mock_returns_mock_adapter(tmp_path):
-    adapter = make_stripe_adapter(StripeLedger(tmp_path / "ledger.json"), mode="mock", daily_budget_usd=25)
+    adapter = make_stripe_adapter(
+        StripeLedger(tmp_path / "ledger.json"), mode="mock", daily_budget_usd=25
+    )
     assert isinstance(adapter, MockStripeAdapter)
     assert adapter.mode == "mock"
 
 
 @patch("aqtc.integrations.stripe_skills.get_secret", return_value=None)
-def test_adapter_factory_stripe_test_returns_stripe_test_adapter_without_calling_network(mock_secret, tmp_path):
+def test_adapter_factory_stripe_test_returns_stripe_test_adapter_without_calling_network(
+    mock_secret, tmp_path
+):
     adapter = make_stripe_adapter(
         StripeLedger(tmp_path / "ledger.json"), mode="stripe_test", daily_budget_usd=25
     )

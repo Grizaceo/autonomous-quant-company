@@ -14,7 +14,9 @@ def _run(tmp_path, **overrides):
 def test_daily_cycle_is_deterministic_in_mock_mode(tmp_path):
     agent, first = _run(tmp_path)
     second = agent.run_daily_cycle(reset=True)
-    assert first.to_dict() | {"report_path": "<path>"} == second.to_dict() | {"report_path": "<path>"}
+    assert first.to_dict() | {"report_path": "<path>"} == second.to_dict() | {
+        "report_path": "<path>"
+    }
 
 
 def test_daily_cycle_logs_expected_actions_in_order(tmp_path):

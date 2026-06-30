@@ -59,7 +59,10 @@ def test_api_cycle_requires_token_when_token_configured(client, monkeypatch):
     monkeypatch.setenv("AQTC_API_TOKEN", "secret-token")
     assert client.post("/cycle/run").status_code == 401
     assert client.post("/cycle/run", headers={"Authorization": "Bearer wrong"}).status_code == 401
-    assert client.post("/cycle/run", headers={"Authorization": "Bearer secret-token"}).status_code == 200
+    assert (
+        client.post("/cycle/run", headers={"Authorization": "Bearer secret-token"}).status_code
+        == 200
+    )
 
 
 def test_api_cycle_allows_without_token_only_when_unconfigured(client, monkeypatch):

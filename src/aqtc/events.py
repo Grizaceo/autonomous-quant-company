@@ -77,7 +77,9 @@ class EventLog:
         previous_hash: str | None = None
         chain_started = False
         for index, event in enumerate(events):
-            has_hash = isinstance(event.get("hash"), str) and isinstance(event.get("prev_hash"), str | type(None))
+            has_hash = isinstance(event.get("hash"), str) and isinstance(
+                event.get("prev_hash"), str | type(None)
+            )
             if not has_hash:
                 if chain_started:
                     return {

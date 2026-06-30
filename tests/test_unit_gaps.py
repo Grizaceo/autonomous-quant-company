@@ -15,7 +15,9 @@ from aqtc.financial_core.signals import (
 
 def _signal(weights):
     positions = [
-        PositionSignal(ticker=f"T{i}", weight=w, last_close=10 + i, position_value_per_100k=w * 100000)
+        PositionSignal(
+            ticker=f"T{i}", weight=w, last_close=10 + i, position_value_per_100k=w * 100000
+        )
         for i, w in enumerate(weights)
     ]
     return TradingSignal(

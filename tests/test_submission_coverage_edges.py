@@ -51,16 +51,18 @@ def test_cli_demo_modes_and_policy_flags(isolated_env, tmp_path, capsys):
         "  require_approval: [spend_above_threshold]\n",
         encoding="utf-8",
     )
-    code = main([
-        "demo",
-        "--json",
-        "--stripe-mode",
-        "stripe_test",
-        "--nvidia-mode",
-        "mock",
-        "--policy",
-        str(policy),
-    ])
+    code = main(
+        [
+            "demo",
+            "--json",
+            "--stripe-mode",
+            "stripe_test",
+            "--nvidia-mode",
+            "mock",
+            "--policy",
+            str(policy),
+        ]
+    )
     data = json.loads(capsys.readouterr().out)
     assert code == 0
     assert data["stripe_mode"] == "stripe_test"

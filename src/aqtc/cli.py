@@ -174,7 +174,6 @@ def _dispatch(args: argparse.Namespace) -> int:
     raise AssertionError(args.command)
 
 
-
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
@@ -189,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(f"aqtc: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
