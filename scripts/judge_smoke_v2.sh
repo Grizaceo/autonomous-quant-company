@@ -42,7 +42,7 @@ section "secret scan"
 scripts/pre_submission_secret_scan.sh
 
 section "tests + coverage"
-python -m pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=88
+python -m pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=90
 
 section "lint"
 ruff check .

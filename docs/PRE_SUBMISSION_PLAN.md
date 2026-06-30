@@ -32,7 +32,7 @@ Resultado real:
 5. **No tenía gates de envío**: faltaba matriz final con comandos obligatorios.
 6. **No incluía secret scan ni proof verification como gates**: crítico para envío público.
 7. **No trataba `.venv-devonly/` y `.venv-smoke/`**: aparecen untracked y deben borrarse o ignorarse antes del envío.
-8. **Coverage target mal calibrado**: ya estamos en 84.26%; el objetivo razonable pre-envío es `>=88%` o `>=90%` en módulos no-harness, no simplemente “más tests”.
+8. **Coverage target mal calibrado**: ya estábamos en 84.26%; el objetivo final ejecutado es `>=90%`, no simplemente “más tests”.
 
 ---
 
@@ -212,7 +212,7 @@ Orden de commits recomendado:
 
 Objetivo: no inflar a 128 tests por volumen. Objetivo real:
 
-- Coverage total: `>=88%` primero, `>=90%` si no rompe timing.
+- Coverage total: `>=90%` después de la suite final.
 - Subir especialmente módulos débiles:
   - `secrets.py`: 45% → >=90%
   - `mcp_server.py`: 74% → >=85%
@@ -525,7 +525,7 @@ Jobs:
 1. install `.[dev,api,mcp,live]`
 2. `ruff check .`
 3. `mypy src tests`
-4. `pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=88`
+4. `pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=90`
 5. secret scan grep
 
 No usar secrets en CI.
@@ -542,7 +542,7 @@ git branch --show-current
 git status --short
 
 # 2. Tests + coverage
-pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=88
+pytest -q --cov=aqtc --cov-report=term-missing --cov-fail-under=90
 
 # 3. Lint + typing
 ruff check .
@@ -571,7 +571,7 @@ Criterios:
 
 - `git status --short`: limpio salvo artefactos intencionales.
 - `pytest`: pass.
-- Coverage: >=88% primero; >=90% si P1 completa sin costo alto.
+- Coverage: >=90%.
 - `ruff`: pass.
 - `mypy`: pass.
 - Demo JSON: parsea.
@@ -624,7 +624,7 @@ Por qué este orden:
 ## 11. Resultado esperado si se completa P0-P2
 
 - Branch con tests productivos: ~80-95 tests, no 128 inflados.
-- Coverage >=88%, ideal >=90%.
+- Coverage >=90%.
 - Secrets/security gates explícitos.
 - Evidence integrity machine-checked.
 - CLI/API/MCP public contracts protegidos.
