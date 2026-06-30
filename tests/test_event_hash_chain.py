@@ -45,6 +45,23 @@ def test_event_hash_chain_accepts_legacy_entries_as_unverified_legacy(tmp_path):
     assert log.verify_chain()["ok"] is True
 
 
+def test_event_hash_chain_detects_deleted_middle_event(tmp_path):
+    path = tmp_path / "events.jsonl"
+    log = EventLog(path)
+    log.append(BusinessEvent(actor="a", action="one", summary="first"))
+    log.append(BusinessEvent(actor="a", action="two", summary="second"))
+    log.append(BusinessEvent(actor="a", action="three", summary="third"))
+
+    events = log.read()
+    del events[1]  # drop the middle event so the prev_hash link no longer resolves
+    path.write_text("\n".join(json.dumps(event, sort_keys=True) for event in events) + "\n")
+
+    result = log.verify_chain()
+    assert result["ok"] is False
+    assert result["first_bad_index"] == 1
+    assert result["reason"] == "prev_hash_mismatch"
+
+
 def test_event_hash_chain_rejects_legacy_entry_after_chain_started(tmp_path):
     path = tmp_path / "events.jsonl"
     log = EventLog(path)
