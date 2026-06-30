@@ -15,7 +15,7 @@ except Exception:  # pragma: no cover - optional dependency
     HTMLResponse = None
 
 
-def _check_api_token(authorization: str | None = Header(default=None)) -> None:
+def _check_api_token(authorization: str | None = None) -> None:
     token = os.getenv("AQTC_API_TOKEN")
     if not token:
         return
