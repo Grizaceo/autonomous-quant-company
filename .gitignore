@@ -11,6 +11,8 @@ __pycache__/
 .coverage
 htmlcov/
 .venv/
+.venv-devonly/
+.venv-smoke/
 venv/
 build/
 
