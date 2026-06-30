@@ -11,12 +11,37 @@
 - Customer report: quant research deliverable billed at $19.00.
 - Data procurement: $2.00 market-data sample (status: completed).
 
+## Research provenance
+
+- Engine: Financial Lab
+- Model: HGAT+ES v4 (19D genotype)
+- Algorithm: evolution_strategies
+- Mean Sharpe: 3.255 (5 folds, 100% positive)
+- Mean max drawdown: 0.032
+- Config: d_model=128, pop_size=30, reward_horizon=30
+
+## What was rejected
+
+- Name: 2019+ ensemble
+- Sharpe: -0.544
+- Max drawdown: 0.486
+- Reason: failed recent-regime robustness
+- Gate result: rejected: Sharpe -0.544, MaxDD 0.486, consistency 0%
+
 ## Strategy decision
 
 - Accepted production strategy: True
-- Reason: Gate 4 passed: mean Sharpe 3.255 across 5 folds, max drawdown 0.032
+- Reason: accepted: Sharpe 3.255, MaxDD 0.032, consistency 100%
 - Sharpe delta vs rejected ensemble: 3.799
 - Drawdown improvement vs rejected ensemble: 0.454
+
+## Risk policy
+
+- Policy: aqtc-hackathon-demo-v1
+- Live trading: False
+- Denied actions: live_broker_execution, print_payment_card_pan, commit_secret_material
+- Max gross exposure: 4.0
+- Daily budget: $25.00
 
 ## Approval
 
@@ -31,7 +56,7 @@
 ## Paper portfolio
 
 - Mode: paper
-- Positions: 2
+- Positions: 4
 - Gross exposure: 4.000
 
 ## Business ledger

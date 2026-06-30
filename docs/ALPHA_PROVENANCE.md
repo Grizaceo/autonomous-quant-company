@@ -23,6 +23,15 @@ Production config (`data/demo/production.toml`):
 - `rollout_horizon`: 150
 - `max_generations`: 50
 
+**Note on language:** `production.toml`'s comments are in Spanish (original Financial Lab
+research notes). They are left untranslated deliberately — translating them would change
+the file's bytes and break the byte-identical SHA-256 match to
+[financial-lab-reference](https://github.com/Grizaceo/financial-lab-reference) documented
+below. English translation for reference: line 1 "configs/production.toml — CANONICAL
+PRODUCTION CONFIGURATION"; the `[validation_metadata]` section header "VALIDATION METADATA";
+and the warning comment "DO NOT USE ensemble_production (seeds 7,8,9) — fails in test window
+2019+" (this is the rejected candidate documented below, kept out of the production config).
+
 Source artifacts:
 
 - `data/demo/walkforward_report.json` — 5-fold walkforward summary
