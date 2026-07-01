@@ -34,7 +34,9 @@ No secret values are printed or committed.
 
 ## Official Hermes Stripe Skills path
 
-For full sponsor alignment, P2 should add wrappers/instructions for:
+AQTC's deterministic judge demo does not self-approve outbound Link/card spend. Full sponsor alignment is the Hermes operator path documented in [docs/HERMES_RUNTIME_AND_STRIPE_SKILLS.md](HERMES_RUNTIME_AND_STRIPE_SKILLS.md): AQTC runs as a Hermes MCP server, and Hermes can use official Stripe Skills for approved outbound spend/provisioning.
+
+Install/check:
 
 ```bash
 hermes skills install official/payments/stripe-projects

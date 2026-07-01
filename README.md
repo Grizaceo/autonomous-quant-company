@@ -14,7 +14,7 @@ A Hermes-powered autonomous quantitative research company for the NVIDIA × Stri
 | Prompt → signal → chart | Financial Lab **HGAT+ES v4** alpha with frozen walkforward evidence |
 | Hides bad backtests | **Rejects** failed candidates (2019+ ensemble Sharpe **-0.544**) |
 | No business loop | Buys data, validates, approves, paper-trades, **bills $19** via Stripe |
-| Black box | Full provenance: `aqtc provenance --json`, MCP, API `/provenance` |
+| Black box | Full provenance: `aqtc provenance --json`, Hermes MCP tools, API `/provenance` |
 
 **Key principle:** ES is verifiable alpha origin/provenance — not heavy live training in the demo.
 
@@ -155,13 +155,16 @@ aqtc regime --provider openrouter --json
 aqtc demo --nvidia-mode openrouter --json
 ```
 
-## MCP server
+## Hermes-native MCP server
 
 ```bash
 aqtc-mcp
 fastmcp call src/aqtc/mcp_server.py aqtc_get_provenance --json
 fastmcp call src/aqtc/mcp_server.py aqtc_get_report --json
+bash scripts/hermes_native_smoke.sh
 ```
+
+Hermes runtime setup and the official Stripe Skills boundary are documented in [docs/HERMES_RUNTIME_AND_STRIPE_SKILLS.md](docs/HERMES_RUNTIME_AND_STRIPE_SKILLS.md).
 
 ## Development
 

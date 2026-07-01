@@ -15,8 +15,8 @@
 **Claim 3: Runs as a business.**  
 **Evidence:** Spend **$2** (data), earn **$19** (report), net **$17**. Stripe test PaymentIntent **succeeded** — redacted proof at `docs/proof/stripe_test_paymentintent_redacted.json` (`pi_3TncGX4qsu8xWISK0x5Rc0IY`).
 
-**Claim 4: Agent decisions visible.**  
-**Evidence:** `aqtc demo` prints DECISIONS block — strategy accept/reject, spend gate, trade gate, Stripe earn status. `scripts/judge_demo_60s.sh` for ~60s video.
+**Claim 4: Hermes-native agent surface.**
+**Evidence:** AQTC exposes `aqtc_run_cycle`, `aqtc_status`, `aqtc_get_provenance`, `aqtc_get_report`, and `aqtc_get_events` as Hermes MCP tools via `aqtc-mcp`. `aqtc demo` prints the same DECISIONS block for fresh-clone reproducibility. Smoke: `bash scripts/hermes_native_smoke.sh`.
 
 **Claim 5: Safe by default.**  
 **Evidence:** `live_broker_execution` denied in `examples/approval_policy.yaml`; NemoClaw-compatible policy adapter (`src/aqtc/integrations/nemoclaw.py`); paper `MockBroker` only.

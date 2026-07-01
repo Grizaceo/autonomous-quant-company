@@ -30,3 +30,11 @@ mcp_servers:
 ```
 
 After adding the server, restart Hermes or run `/reload-mcp`.
+
+## Hermes runtime smoke
+
+```bash
+bash scripts/hermes_native_smoke.sh
+```
+
+See [docs/HERMES_RUNTIME_AND_STRIPE_SKILLS.md](HERMES_RUNTIME_AND_STRIPE_SKILLS.md) for the end-to-end Hermes runtime + official Stripe Skills boundary.
