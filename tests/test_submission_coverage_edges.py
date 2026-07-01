@@ -22,6 +22,8 @@ def test_cli_demo_human_output_contract(isolated_env, capsys):
     assert "DECISIONS (agent-visible)" in out
     assert "validate_strategy: accept=True" in out
     assert "reject_strategy: rejected=True" in out
+    assert "strategy_integrity: verified" in out
+    assert "SHA checks" in out
     assert "stripe_earn:" in out
     assert "events_logged:" in out
 

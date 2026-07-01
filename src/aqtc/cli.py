@@ -145,6 +145,11 @@ def _dispatch(args: argparse.Namespace) -> int:
                 f"(ledger spend_status={result.spend_status})"
             )
             print(
+                f"  strategy_integrity: {result.strategy_integrity_status} "
+                f"({result.strategy_integrity_checked} SHA checks, "
+                f"failures={result.strategy_integrity_failure_count})"
+            )
+            print(
                 f"  trade_gate: {result.approval_status} "
                 f"(positions={result.portfolio_positions}, gross={result.gross_exposure:.3f})"
             )
