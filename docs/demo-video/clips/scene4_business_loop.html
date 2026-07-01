@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AQTC — Business Loop</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<div class="title">Business loop: policy gate → Nemotron → Stripe ledger</div>
+<div class="subtitle">One <code>aqtc demo</code> cycle, fully audited</div>
+
+<div class="flow">
+  <div class="step safety">
+    <div class="icon">🛡️</div>
+    <div class="name">Policy Gate</div>
+    <div class="tag">aqtc-hackathon-demo-v1</div>
+    <div class="detail">Daily budget $25 · max gross 4.0 · live trading: false</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="step info">
+    <div class="icon">🧠</div>
+    <div class="name">Nemotron</div>
+    <div class="tag">regime summary</div>
+    <div class="detail">Prefer validated HGAT+ES v4, reject poor out-of-sample drawdown</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="step business">
+    <div class="icon">💰</div>
+    <div class="name">Stripe Ledger</div>
+    <div class="tag">mock mode</div>
+    <div class="detail">$2 data spend → $19 customer report</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="step alpha">
+    <div class="icon">📈</div>
+    <div class="name">Paper Portfolio</div>
+    <div class="tag">MockBroker</div>
+    <div class="detail">4 positions · gross exposure 4.0</div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric-box">
+    <div class="value yellow">$17</div>
+    <div class="label">Net result</div>
+  </div>
+  <div class="metric-box">
+    <div class="value">$2</div>
+    <div class="label">Spend</div>
+  </div>
+  <div class="metric-box">
+    <div class="value green">$19</div>
+    <div class="label">Earn</div>
+  </div>
+  <div class="metric-box">
+    <div class="value blue">4.0</div>
+    <div class="label">Gross exposure</div>
+  </div>
+</div>
+
+<div class="info-bar"><code>live_broker_execution</code> denied by policy — paper MockBroker only.</div>
+
+</body>
+</html>
