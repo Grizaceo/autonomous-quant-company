@@ -16,7 +16,7 @@ Not prompt trading — evolved HGAT+ES alpha (Sharpe 3.255, 5/5 folds). We *reje
 
 ## Discord blurb
 
-**AQTC — Autonomous Quant Company** for the Hermes hackathon. Evolved HGAT+ES alpha (Sharpe 3.255, 5-fold walkforward), explicit rejection of bad ensemble (-0.544), Hermes-operated business cycle with Stripe revenue proof, NemoClaw-compatible policy adapter, MCP + API. Demo: `aqtc demo` (~60s script: `scripts/judge_demo_60s.sh`). https://github.com/Grizaceo/autonomous-quant-company
+**AQTC — Autonomous Quant Company** for the Hermes hackathon. Evolved HGAT+ES alpha (Sharpe 3.255, 5-fold walkforward), explicit rejection of bad ensemble (-0.544), runtime SHA-256 verification of strategy artifacts before paper rebalance, Hermes-operated business cycle with Stripe revenue proof, NemoClaw-compatible policy adapter, MCP + API. Demo: `aqtc demo` (~60s script: `scripts/judge_demo_60s.sh`). https://github.com/Grizaceo/autonomous-quant-company
 
 ## Typeform / video
 

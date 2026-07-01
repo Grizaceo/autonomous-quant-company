@@ -10,6 +10,11 @@ from aqtc.financial_core.portfolio import MockBroker
 from aqtc.financial_core.provenance import load_alpha_provenance
 from aqtc.financial_core.risk import RiskGuard, RiskPolicy
 from aqtc.financial_core.signals import cap_signal, load_latest_signal
+from aqtc.financial_core.strategy_integrity import (
+    StrategyIntegrityResult,
+    infer_repo_root_from_demo_dir,
+    verify_strategy_artifacts,
+)
 from aqtc.financial_core.validation import compare_candidate_vs_rejected, load_json, passes_gate4
 from aqtc.integrations.nemoclaw import LocalPolicyApprovalAdapter, load_approval_policy
 from aqtc.integrations.nvidia import make_nemotron_adapter
@@ -36,6 +41,10 @@ class BusinessCycleResult:
     rejection_reason: str | None = None
     spend_approval_status: str = "approved"
     earn_status: str = "recorded"
+    strategy_integrity_ok: bool = True
+    strategy_integrity_status: str = "verified"
+    strategy_integrity_checked: int = 0
+    strategy_integrity_failure_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -146,6 +155,17 @@ class AutonomousQuantCompanyAgent:
                 approval_status=spend_approval.status,
             )
 
+        strategy_integrity = verify_strategy_artifacts(
+            repo_root=infer_repo_root_from_demo_dir(data),
+            manifest_path=data / "proof_manifest.generated.json",
+        )
+        self._event(
+            "verify_strategy_integrity",
+            strategy_integrity.summary,
+            approval_status="approved" if strategy_integrity.ok else "blocked",
+            evidence=strategy_integrity.to_dict(),
+        )
+
         decision = passes_gate4(production)
         bad_decision = passes_gate4(rejected)
         rejection_reason = provenance["rejected"]["reason"]
@@ -179,7 +199,7 @@ class AutonomousQuantCompanyAgent:
             evidence=approval.checks,
         )
 
-        if approval.approved and decision.accepted:
+        if approval.approved and decision.accepted and strategy_integrity.ok:
             portfolio = self.broker.rebalance(capped_signal)
             self._event(
                 "execute_paper_rebalance",
@@ -188,7 +208,10 @@ class AutonomousQuantCompanyAgent:
             )
         else:
             portfolio = self.broker.load()
-            self._event("skip_execution", "trade not executed", approval_status=approval.status)
+            skip_reason = "trade not executed"
+            if not strategy_integrity.ok:
+                skip_reason = "strategy artifact integrity blocked paper rebalance"
+            self._event("skip_execution", skip_reason, approval_status=approval.status)
 
         earn = self.stripe.earn("customer quant research report", self.config.report_price_usd)
         self._event(
@@ -207,6 +230,7 @@ class AutonomousQuantCompanyAgent:
             provenance=provenance,
             bad_decision=bad_decision,
             earn_event=earn,
+            strategy_integrity=strategy_integrity,
         )
         self._event("generate_report", f"report written to {report_path}")
 
@@ -229,6 +253,10 @@ class AutonomousQuantCompanyAgent:
             rejection_reason=rejection_reason,
             spend_approval_status=spend_approval.status,
             earn_status=earn.status,
+            strategy_integrity_ok=strategy_integrity.ok,
+            strategy_integrity_status=strategy_integrity.status,
+            strategy_integrity_checked=strategy_integrity.checked_count,
+            strategy_integrity_failure_count=len(strategy_integrity.failures),
         )
 
     def generate_report(
@@ -242,6 +270,7 @@ class AutonomousQuantCompanyAgent:
         provenance: dict[str, Any] | None = None,
         bad_decision: Any | None = None,
         earn_event: StripeLedgerEvent | None = None,
+        strategy_integrity: StrategyIntegrityResult | None = None,
     ) -> Path:
         provenance = provenance or load_alpha_provenance(self.config.demo_data_dir)
         accepted = provenance["accepted"]
@@ -275,13 +304,32 @@ class AutonomousQuantCompanyAgent:
                 f"run scripts/capture_stripe_proof.sh with STRIPE_SECRET_KEY to generate "
                 f"docs/proof/stripe_test_paymentintent_redacted.json"
             )
+        integrity_section = ""
+        if strategy_integrity is not None:
+            failure_lines = "\n".join(
+                f"- {failure.path}: {failure.reason}" for failure in strategy_integrity.failures
+            )
+            if not failure_lines:
+                failure_lines = "- None"
+            integrity_section = f"""
+## Strategy artifact integrity
+
+- Status: {strategy_integrity.status}
+- Checked artifacts: {strategy_integrity.checked_count}
+- Manifest: {strategy_integrity.manifest_path}
+- Failures:
+{failure_lines}
+"""
+        operation_status = (
+            "paper rebalance approved" if portfolio.positions else "paper rebalance skipped"
+        )
         content = f"""# Autonomous Quant Company Report
 
 ## Executive summary
 
 - Production alpha: {provenance["model"]} with mean Sharpe {accepted["mean_sharpe"]:.3f} across {accepted["n_folds"]} walkforward folds.
 - Falsification: {rejected["name"]} rejected (Sharpe {rejected["sharpe"]:.3f}).
-- Operations: paper rebalance approved; net ledger result ${self.ledger.net():.2f}.
+- Operations: {operation_status}; net ledger result ${self.ledger.net():.2f}.
 
 ## What customer paid for
 
@@ -303,7 +351,7 @@ class AutonomousQuantCompanyAgent:
 - Reason: {decision.reason}
 - Sharpe delta vs rejected ensemble: {comparison["sharpe_delta"]:.3f}
 - Drawdown improvement vs rejected ensemble: {comparison["drawdown_delta"]:.3f}
-
+{integrity_section}
 ## Risk policy
 
 - Policy: {approval.policy_id}

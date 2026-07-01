@@ -26,6 +26,7 @@ def test_daily_cycle_logs_expected_actions_in_order(tmp_path):
         "summarize_regime",
         "approve_spend",
         "spend",
+        "verify_strategy_integrity",
         "validate_strategy",
         "reject_strategy",
         "approve_trade",
