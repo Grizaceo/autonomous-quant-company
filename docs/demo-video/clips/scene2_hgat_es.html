@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AQTC — Financial Lab HGAT+ES v4</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<div class="title">Financial Lab: HGAT+ES v4</div>
+<div class="subtitle">Heterogeneous Graph Attention Network, optimized with Evolution Strategies</div>
+
+<div class="row">
+  <div class="card wide accept">
+    <div class="icon">🧬</div>
+    <div class="name">HGAT+ES v4</div>
+    <div class="role">Typed graph: stock · commodity · macro · risk nodes</div>
+    <ul>
+      <li>Heterogeneous graph attention over typed asset/regime nodes</li>
+      <li>Non-differentiable, cost-aware reward → Evolution Strategies (not backprop/PPO)</li>
+      <li>Frozen walkforward evidence — no runtime ES training in this demo</li>
+    </ul>
+    <div class="config-strip">
+      <span><b>genotype</b> 19D</span>
+      <span><b>d_model</b> 128</span>
+      <span><b>population</b> 30</span>
+      <span><b>generations</b> 50</span>
+    </div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric-box">
+    <div class="value green">3.255</div>
+    <div class="label">Mean Sharpe</div>
+  </div>
+  <div class="metric-box">
+    <div class="value green">5/5</div>
+    <div class="label">Folds positive</div>
+  </div>
+  <div class="metric-box">
+    <div class="value green">0.032</div>
+    <div class="label">Max drawdown</div>
+  </div>
+  <div class="metric-box">
+    <div class="value blue">19D</div>
+    <div class="label">Genotype φ</div>
+  </div>
+</div>
+
+<div class="info-bar">Engine published separately: github.com/Grizaceo/financial-lab-reference — byte-identical (SHA-256) to the evidence used here.</div>
+
+</body>
+</html>

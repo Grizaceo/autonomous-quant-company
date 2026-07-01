@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AQTC — Falsification</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<div class="title">Falsification before promotion</div>
+<div class="subtitle">Every candidate is judged against the same gate — good or bad</div>
+
+<div class="row">
+  <div class="card reject">
+    <div class="icon">✗</div>
+    <div class="name">REJECTED</div>
+    <div class="repo">2019+ ensemble</div>
+    <div class="role">Failed recent-regime robustness</div>
+    <ul>
+      <li>Sharpe <span class="red">-0.544</span></li>
+      <li>Max drawdown <span class="red">0.486</span></li>
+      <li>0/5 folds consistent</li>
+    </ul>
+  </div>
+
+  <div class="arrow-col">
+    <div class="arrow">→</div>
+    <div class="label">same gate<br>no exceptions</div>
+  </div>
+
+  <div class="card accept">
+    <div class="icon">✓</div>
+    <div class="name">ACCEPTED</div>
+    <div class="repo">HGAT+ES v4</div>
+    <div class="role">5-fold walkforward, 100% positive</div>
+    <ul>
+      <li>Sharpe <span class="green">3.255</span></li>
+      <li>Max drawdown <span class="green">0.032</span></li>
+      <li>+3.799 Sharpe delta vs rejected</li>
+    </ul>
+  </div>
+</div>
+
+<div class="reject-bar">Gate logic: any negative fold or drawdown over the policy threshold → reject. Falsification happens before trading, not after.</div>
+
+</body>
+</html>

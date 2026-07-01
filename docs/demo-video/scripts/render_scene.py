@@ -45,6 +45,16 @@ def main() -> int:
     ap.add_argument("--top-tag", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--clips-dir", required=True)
+    ap.add_argument(
+        "--duration",
+        type=float,
+        required=True,
+        help="Exact output duration (bg video length). Audio is "
+        "silence-padded to it instead of trimming the tail "
+        "with -shortest, so each scene keeps a quiet beat "
+        "after the voice-over — headroom for the crossfade "
+        "in concat_with_transitions.py.",
+    )
     args = ap.parse_args()
 
     clips = pathlib.Path(args.clips_dir)
@@ -81,6 +91,8 @@ def main() -> int:
         args.audio,
         "-vf",
         vf,
+        "-af",
+        "apad",
         "-c:v",
         "libx264",
         "-preset",
@@ -97,7 +109,8 @@ def main() -> int:
         "1",
         "-b:a",
         "192k",
-        "-shortest",
+        "-t",
+        f"{args.duration}",
         args.out,
     ]
     subprocess.run(cmd, check=True)

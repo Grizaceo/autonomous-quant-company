@@ -1,0 +1,79 @@
+/* AQTC demo-video shared theme — one design system across all six scenes.
+   Extracted from the original flow_slide.html / financial_lab_explainer.html
+   so every scene renders from the same tokens instead of six near-copies. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 1920px; height: 1080px;
+  background: #0d1117;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #e6edf3;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+
+.title { font-size: 42px; font-weight: 700; color: #58a6ff; margin-bottom: 8px; letter-spacing: 1px; text-align: center; }
+.subtitle { font-size: 22px; color: #8b949e; margin-bottom: 40px; text-align: center; }
+
+/* horizontal flow of labeled steps, connected by arrows */
+.flow { display: flex; align-items: center; gap: 0; margin-bottom: 50px; }
+.step { background: #161b22; border: 2px solid #30363d; border-radius: 16px; padding: 24px 28px; text-align: center; min-width: 220px; max-width: 260px; }
+.step .icon { font-size: 36px; margin-bottom: 8px; }
+.step .name { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+.step .tag { font-size: 12px; color: #58a6ff; margin-bottom: 6px; font-weight: 600; }
+.step .detail { font-size: 14px; color: #8b949e; line-height: 1.4; }
+.arrow { font-size: 32px; color: #58a6ff; padding: 0 8px; font-weight: 300; }
+
+.step.alpha { border-color: #3fb950; } .step.alpha .name { color: #3fb950; }
+.step.reject { border-color: #f85149; } .step.reject .name { color: #f85149; }
+.step.business { border-color: #d29922; } .step.business .name { color: #d29922; }
+.step.safety { border-color: #a371f7; } .step.safety .name { color: #a371f7; }
+.step.info { border-color: #58a6ff; } .step.info .name { color: #58a6ff; }
+
+/* metric numbers row */
+.metrics { display: flex; gap: 60px; margin-top: 10px; }
+.metric-box { text-align: center; }
+.metric-box .value { font-size: 36px; font-weight: 700; }
+.metric-box .label { font-size: 14px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+
+.green { color: #3fb950; } .red { color: #f85149; } .yellow { color: #d29922; } .blue { color: #58a6ff; } .purple { color: #a371f7; }
+
+/* two-up (or single, wide) card row */
+.row { display: flex; align-items: center; gap: 0; }
+.card { background: #161b22; border: 2px solid #30363d; border-radius: 18px; padding: 36px 40px; width: 560px; text-align: left; }
+.card.wide { width: 900px; }
+.card .icon { font-size: 44px; margin-bottom: 12px; }
+.card .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.card .repo { font-family: 'DejaVu Sans Mono', monospace; font-size: 16px; color: #8b949e; margin-bottom: 18px; }
+.card .role { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 10px; }
+.card ul { list-style: none; }
+.card li { font-size: 16px; color: #8b949e; margin-bottom: 8px; padding-left: 22px; position: relative; }
+.card li::before { content: "—"; position: absolute; left: 0; color: #484f58; }
+
+.card.lab { border-color: #3fb950; } .card.lab .name { color: #3fb950; }
+.card.aqtc { border-color: #58a6ff; } .card.aqtc .name { color: #58a6ff; }
+.card.reject { border-color: #f85149; } .card.reject .name { color: #f85149; }
+.card.accept { border-color: #3fb950; } .card.accept .name { color: #3fb950; }
+
+.arrow-col { display: flex; flex-direction: column; align-items: center; width: 240px; padding: 0 10px; }
+.arrow-col .arrow { font-size: 40px; color: #58a6ff; }
+.arrow-col .label { font-size: 14px; color: #8b949e; text-align: center; margin-top: 10px; line-height: 1.4; }
+
+/* single-line callout bars */
+.footer, .reject-bar, .info-bar {
+  margin-top: 36px; font-size: 18px; border-radius: 12px; padding: 14px 28px; text-align: center;
+}
+.footer { color: #d29922cc; background: #1a160f; border: 1px solid #d2992233; }
+.reject-bar { color: #f85149cc; background: #1a0f0f; border: 1px solid #f8514933; font-size: 16px; }
+.info-bar { color: #58a6ffcc; background: #0f1a24; border: 1px solid #58a6ff33; }
+
+.tagline { position: absolute; bottom: 40px; left: 0; right: 0; text-align: center; font-size: 20px; color: #484f58; font-style: italic; }
+
+code { font-family: 'DejaVu Sans Mono', monospace; background: #ffffff14; padding: 2px 8px; border-radius: 4px; font-size: 0.85em; }
+
+/* small monospace key:value chip strip */
+.config-strip { display: flex; gap: 28px; margin-top: 22px; font-family: 'DejaVu Sans Mono', monospace; font-size: 15px; color: #8b949e; }
+.config-strip b { color: #e6edf3; font-weight: 700; }
